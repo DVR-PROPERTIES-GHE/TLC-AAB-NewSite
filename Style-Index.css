@@ -5,6 +5,19 @@ body {
     font-family: Arial, sans-serif;
 }
 
+.usr-btn 
+{
+    background-color: white;
+    text-align: center;
+    border-radius: 50%;
+}
+
+.usr-btn:hover
+{
+    background-color: whitesmoke;
+    border-color: black;
+}
+
 /* HEADER */
 .header {
     background-color: lightgray;
