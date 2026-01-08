@@ -38,6 +38,11 @@ body {
     flex-wrap: wrap;
 }
 
+.link-topnav_accnt
+{
+    align-self: flex-end;
+}
+
 .link-topnav {
     color: whitesmoke;
     margin: 0 8px;
