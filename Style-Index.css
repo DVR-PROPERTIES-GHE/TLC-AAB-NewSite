@@ -38,11 +38,6 @@ body {
     flex-wrap: wrap;
 }
 
-.link-topnav_accnt
-{
-    align-self: flex-end;
-}
-
 .link-topnav {
     color: whitesmoke;
     margin: 0 8px;
@@ -113,4 +108,8 @@ body {
     .post {
         padding: 0;
     }
+}
+
+.link-topnav-left {
+    margin-right: auto; /* pushes it to the left in a flex container */
 }
