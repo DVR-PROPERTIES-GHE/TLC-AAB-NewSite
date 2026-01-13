@@ -109,7 +109,3 @@ body {
         padding: 0;
     }
 }
-
-.link-topnav-left {
-    margin-right: auto; /* pushes it to the left in a flex container */
-}
