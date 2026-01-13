@@ -4,7 +4,7 @@
   "description": "An App To Control Aspects Of The TLC Website.",
   "start_url": "/TLC-AAB/login",
   "version": "1.01",
-  "scope": "/TLC-AAB/login",
+  "scope": "/TLC-AAB/",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#ffffff",
