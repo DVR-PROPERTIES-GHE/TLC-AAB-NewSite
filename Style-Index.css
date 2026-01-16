@@ -5,6 +5,18 @@ body {
     font-family: Arial, sans-serif;
 }
 
+.V2_ImagePg
+{
+    background-color: whitesmoke;
+    height:auto;
+}
+
+.V2_Img
+{
+    border-radius: 5%;
+    background-color: white;
+}
+
 .usr-btn 
 {
     background-color: white;
