@@ -7,6 +7,11 @@ body {
 
 .V2_ImagePg
 {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding: 20px;
     background-color: whitesmoke;
     min-height: 250px;
 }
