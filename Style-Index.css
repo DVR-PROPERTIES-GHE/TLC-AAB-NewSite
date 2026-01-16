@@ -5,6 +5,13 @@ body {
     font-family: Arial, sans-serif;
 }
 
+.review-link
+{
+    text-decoration: none;
+    text-decoration-line: none;
+    text-decoration-color: black;
+}
+
 .V2_ImagePg
 {
     display: flex;
