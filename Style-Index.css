@@ -5,6 +5,8 @@ body {
     font-family: Arial, sans-serif;
 }
  
+.whitesmoke {background-color: whitesmoke;}
+
 .review-link
 {
     text-decoration: none;
