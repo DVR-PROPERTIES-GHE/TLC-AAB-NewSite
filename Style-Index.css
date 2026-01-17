@@ -4,53 +4,44 @@ body {
     text-align: center;
     font-family: Arial, sans-serif;
 }
- 
-.whitesmoke {background-color: whitesmoke;}
 
-.review-link
-{
-    text-decoration: none;
-    text-decoration-line: none;
-    text-decoration-color: black;
+.whitesmoke {
+    background-color: whitesmoke;
 }
 
-.V2_ImagePg
-{
+.review-link {
+    text-decoration: none;
+    color: black;
+}
+
+.V2_ImagePg {
     display: flex;
     gap: 20px;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
-    padding: 20px;
     background-color: whitesmoke;
-    min-width: min-content;
-    max-width: 100%;
-    min-height: min-content;
-    max-height: max-content;
-    width: fit-content;
-    height: fit-content;
+    padding: 20px;
+    width: 100%;
 }
 
-.V2_Img
-{
+/* Image Containers */
+.V2_Img {
     min-height: 48px;
     min-width: 48px;
     max-width: 100px;
-    max-height: auto;
     border-radius: 25px;
     background-color: white;
 }
 
-.usr-btn 
-{
+.usr-btn {
     background-color: white;
     text-align: center;
     border-radius: 50%;
 }
 
-.usr-btn:hover
-{
+.usr-btn:hover {
     background-color: whitesmoke;
-    border-color: black;
+    border: 1px solid black;
 }
 
 /* HEADER */
@@ -105,25 +96,29 @@ body {
 /* FACEBOOK POSTS SCROLLER */
 .postCol {
     display: flex;
-    gap: 2px;
+    gap: 20px; /* increased spacing */
     overflow-x: auto;
+    overflow-y: hidden;
     scroll-snap-type: x mandatory;
     padding: 2px;
+    max-width: 100vw;
+    overscroll-behavior-inline: contain; /* prevents whole page scroll */
 }
 
+/* Post Cards */
 .post {
     scroll-snap-align: start;
     flex: 0 0 auto;
-    width: 90vw; /* full width on mobile */
+    width: 90vw;
     max-width: 500px;
+    touch-action: pan-x; /* improves swipe */
 }
 
+/* Facebook Frame */
 .fb-frame {
     width: 100%;
-    height: auto;
-    aspect-ratio: 9 / 16; /* auto responsive height */
+    aspect-ratio: 9 / 16;
     border: none;
-    
 }
 
 /* MOBILE FIXES */
@@ -138,6 +133,7 @@ body {
 
     .postCol {
         padding: 10px;
+        gap: 20px; /* maintain larger spacing */
     }
 
     .post {
