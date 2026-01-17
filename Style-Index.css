@@ -23,7 +23,7 @@ body {
     padding: 20px;
     background-color: whitesmoke;
     min-width: min-content;
-    max-width: max-content;
+    max-width: 100%;
     min-height: min-content;
     max-height: max-content;
     width: fit-content;
