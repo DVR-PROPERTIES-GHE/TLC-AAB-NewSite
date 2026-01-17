@@ -105,6 +105,8 @@ body {
     overscroll-behavior-inline: contain; /* prevents whole page scroll */
 }
 
+.roundcorner{border-radius: 25px;}
+
 /* Post Cards */
 .post {
     scroll-snap-align: start;
