@@ -180,6 +180,14 @@ body {
         return;
     }
 
+    // Map of usernames to friendly display names
+    const usernameMap = {
+        "DVR": "Ethan",
+        "TLC-Chad": "Chad",
+        "TLC-Terri": "Terri"
+        // Add more as needed
+    };
+
     try {
         const [user, expiry] = atob(raw).split("|");
 
@@ -189,11 +197,15 @@ body {
             return;
         }
 
+        // Use mapped name if available, otherwise fallback to original username
+        const displayName = usernameMap[user] || user;
+
         // Render logged-in UI
         container.innerHTML = `
             <div class="column">
-                <h3>Welcome, ${user}</h3>
+                <h3>Welcome, ${displayName}</h3>
                 <p>You are logged in.</p>
+                <button id="logout-btn">Logout</button>
             </div>
             <div class="column V2_ImagePg">
                 <div class="V2_Img usr-btn">U1</div>
