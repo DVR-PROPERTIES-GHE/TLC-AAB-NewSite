@@ -1,117 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="manifest.json">
 	<link rel="icon" type="image/png" href="https://cdn0.iconfinder.com/data/icons/social-glyph/30/tumblr-60.png">
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-	<!-- Boxicons -->
-	<link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
-		<link href='https://cdn.boxicons.com/fonts/basic/boxicons.min.css' rel='stylesheet'>
-	<!-- My CSS -->
-	<link rel="stylesheet" href="style.css">
-
-	<title>TLC Sales</title>
+	<title>TLC Backend</title>
 </head>
 <body>
-	<!-- SIDEBAR -->
-	<section id="sidebar">
-		<a href="index.html" class="brand">
-			<i class='bx bxs-smile'></i>
-			<span class="text">AdminHub</span>
-		</a>
-		<ul class="side-menu top">
-			<li class="active">
-				<a href="index.html#valid=true">
-					<i class='bx bxs-dashboard' ></i>
-					<span class="text">Dashboard</span>
-				</a>
-			</li>
-			<li>
-				<a href="store.html#valid=true">
-					<i class='bx bxs-shopping-bag-alt' ></i>
-					<span class="text">My Store</span>
-				</a>
-			</li>
-			<li>
-				<a href="Analyze.html#valid=true">
-					<i class='bx bxs-doughnut-chart' ></i>
-					<span class="text">Analytics</span>
-				</a>
-			</li>
-			<li>
-				<a href="message.html#valid=true">
-					<i class='bx bxs-message-dots' ></i>
-					<span class="text">Message</span>
-				</a>
-			</li>
-			<li>
-				<a href="#">
-					<i class='bx bxs-group' ></i>
-					<span class="text">Team</span>
-				</a>
-			</li>
-			            <li>
-				<a href="Legal.html#valid=true">
-					<i class='bx bx-form'></i> 
-					<span class="text">Legal</span>
-				</a>
-			</li>
-		</ul>
-		<ul class="side-menu">
-			<li class="active">
-				<a href="cog.html">
-					<i class='bx bxs-cog' ></i>
-					<span class="text">Settings</span>
-				</a>
-			</li>
-			<li>
-				<a href="login.html" class="logout">
-					<i class='bx bxs-log-out-circle' ></i>
-					<span class="text">Logout</span>
-				</a>
-			</li>
-		</ul>
+	<section id="backend-v2">
+		
 	</section>
-	<!-- SIDEBAR -->
 
+	<script src="script.js"></script>
+	<script>
+		(function checkValidationParam() {
+  const params = new URLSearchParams(window.location.search);
+  const isValid = params.get("valid");
 
-
-	<!-- CONTENT -->
-	<section id="content">
-		<!-- NAVBAR -->
-		<nav>
-			<i class='bx bx-menu' ></i>
-			<a href="#" class="nav-link">Categories</a>
-			<form action="#">
-				<div class="form-input">
-					<input type="search" placeholder="Search...">
-					<button type="submit" class="search-btn"><i class='bx bx-search' ></i></button>
-				</div>
-			</form>
-			<a href="notify.html" class="notification">
-				<i class='bx bxs-bell' ></i>
-				<span class="num">8</span>
-			</a>
-			<a href="#" class="profile">
-				<img src="img/people.png">
-			</a>
-		</nav>
-		<!-- NAVBAR -->
-    <div class="column-right"; style="padding-top: 2%; text-align: center;">
-<h1>Settings</h1><br>
-<h2>Settings Page For The Web Server</h2>
-</div>
-
-<!-- Main Settings Content -->
-<center class="settings">
-<div Class="Content-Setting-Main">
-<div class="Content-Setting-Check">
-    <input type="checkbox" size="20px"><label for="checkbox"> Enforce HTTPS</label>
-</div>
-</div>
-</center>
-<script src="script.js"></script>
+  if (isValid === "true") {
+    // Parameter exists and is valid — run your code here
+    console.log("Validation passed. Page can load.");
+  } else {
+    // No valid param — redirect
+    window.location.href = "indexuser.html"; // change to your target URL
+  }
+})();
+	</script>
 </body>
 </html>

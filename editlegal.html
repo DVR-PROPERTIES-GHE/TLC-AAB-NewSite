@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="manifest" href="manifest.json">
+	<link rel="icon" type="image/png" href="https://cdn0.iconfinder.com/data/icons/social-glyph/30/tumblr-60.png">
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>TLC Backend</title>
+</head>
+<body>
+	<section id="backend-v2">
+		
+	</section>
+
+	<script src="script.js"></script>
+	<script>
+		(function checkValidationParam() {
+  const params = new URLSearchParams(window.location.search);
+  const isValid = params.get("valid");
+
+  if (isValid === "true") {
+    // Parameter exists and is valid — run your code here
+    console.log("Validation passed. Page can load.");
+  } else {
+    // No valid param — redirect
+    window.location.href = "indexuser.html"; // change to your target URL
+  }
+})();
+	</script>
+</body>
+</html>
