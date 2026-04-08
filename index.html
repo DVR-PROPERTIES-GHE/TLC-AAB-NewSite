@@ -9,23 +9,54 @@
 </head>
 <body>
 	<section id="backend-v2">
-		
+
 	</section>
 
 	<script src="script.js"></script>
-	<script>
-		(function checkValidationParam() {
-  const params = new URLSearchParams(window.location.search);
-  const isValid = params.get("valid");
+<script>
+(function () {
+  function getCookie(name) {
+    const cookies = document.cookie.split("; ");
+    for (let c of cookies) {
+      const [key, value] = c.split("=");
+      if (key === name) return value;
+    }
+    return null;
+  }
 
-  if (isValid === "true") {
-    // Parameter exists and is valid — run your code here
-    console.log("Validation passed. Page can load.");
-  } else {
-    // No valid param — redirect
-    window.location.href = "indexuser.html"; // change to your target URL
+  function deleteSession() {
+    document.cookie = "session=; path=/; max-age=0";
+  }
+
+  function redirect() {
+    window.location.href = "indexuser.html";
+  }
+
+  const raw = getCookie("session");
+
+  if (!raw) {
+    redirect();
+    return;
+  }
+
+  try {
+    const [user, expiry] = atob(raw).split("|");
+
+    if (Date.now() > parseInt(expiry)) {
+      deleteSession();
+      redirect();
+      return;
+    }
+
+    // Show user
+    document.getElementById("backend-v2").innerHTML =
+      "<h2>Welcome, " + user + "</h2>";
+
+  } catch (e) {
+    deleteSession();
+    redirect();
   }
 })();
-	</script>
+</script>
 </body>
 </html>
