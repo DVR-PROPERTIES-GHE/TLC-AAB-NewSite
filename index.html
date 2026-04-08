@@ -1,20 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="manifest" href="manifest.json">
-	<link rel="icon" type="image/png" href="https://cdn0.iconfinder.com/data/icons/social-glyph/30/tumblr-60.png">
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>TLC Backend</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TLC Backend</title>
+<style>
+  body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: Arial, sans-serif;
+    background: #f5f5f5;
+  }
+  #backend-v2 {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    text-align: center;
+    min-width: 300px;
+  }
+  button {
+    margin-top: 20px;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 6px;
+    background: #333;
+    color: white;
+    cursor: pointer;
+  }
+  button:hover { background: #555; }
+</style>
 </head>
 <body>
-	<section id="backend-v2">
 
-	</section>
+<section id="backend-v2"></section>
 
-	<script src="script.js"></script>
 <script>
 (function () {
+  const container = document.getElementById('backend-v2');
+
   function getCookie(name) {
     const cookies = document.cookie.split("; ");
     for (let c of cookies) {
@@ -28,14 +55,14 @@
     document.cookie = "session=; path=/; max-age=0";
   }
 
-  function redirect() {
+  function redirectHome() {
     window.location.href = "indexuser.html";
   }
 
   const raw = getCookie("session");
 
   if (!raw) {
-    redirect();
+    redirectHome();
     return;
   }
 
@@ -44,19 +71,29 @@
 
     if (Date.now() > parseInt(expiry)) {
       deleteSession();
-      redirect();
+      redirectHome();
       return;
     }
 
-    // Show user
-    document.getElementById("backend-v2").innerHTML =
-      "<h2>Welcome, " + user + "</h2>";
+    // Render logged-in UI
+    container.innerHTML = `
+      <h2>Welcome, ${user}</h2>
+      <p>You are logged in.</p>
+      <button id="logout-btn">Logout</button>
+    `;
 
-  } catch (e) {
+    document.getElementById("logout-btn").addEventListener("click", function () {
+      deleteSession();
+      redirectHome();
+    });
+
+  } catch(e) {
     deleteSession();
-    redirect();
+    redirectHome();
   }
+
 })();
 </script>
+
 </body>
 </html>
