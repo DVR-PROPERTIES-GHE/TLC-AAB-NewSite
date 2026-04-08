@@ -26,7 +26,7 @@
       box-shadow: 0 8px 20px rgba(0,0,0,0.1);
       width: 300px;
     }
-    form div { margin-bottom: 15px; }
+    form div { margin-bottom: 15px; position: relative; }
     input {
       width: 100%;
       padding: 10px;
@@ -58,6 +58,24 @@
     @keyframes spin { to { transform: rotate(360deg); } }
     .loading .btn-text { display: none; }
     .loading .spinner { display: inline-block; }
+
+    /* Eye icon for show/hide password */
+    .password-wrapper {
+      position: relative;
+    }
+    .password-wrapper .toggle-eye {
+      position: absolute;
+      top: 50%;
+      right: 10px;
+      transform: translateY(-50%);
+      cursor: pointer;
+      font-size: 14px;
+      color: #666;
+      user-select: none;
+    }
+    .password-wrapper input {
+      padding-right: 30px;
+    }
   </style>
 </head>
 
@@ -69,9 +87,10 @@
     <input id="username" type="text" placeholder="Enter username" required>
   </div>
 
-  <div>
+  <div class="password-wrapper">
     <label for="password">Password</label>
     <input id="password" type="password" placeholder="Enter password" required>
+    <span class="toggle-eye" id="toggle-password">👁️</span>
   </div>
 
   <div class="buttons">
@@ -97,8 +116,20 @@
   const usernameInput = document.getElementById('username');
   const passwordInput = document.getElementById('password');
   const signInBtn = document.getElementById('sign-in-btn');
+  const togglePassword = document.getElementById('toggle-password');
 
-  const USERS_JSON_URL = "./users.json";
+  const USERS_JSON_URL = "./users.json"; // Make sure users.json is in the same folder
+
+  // Toggle show/hide password
+  togglePassword.addEventListener('click', () => {
+    if (passwordInput.type === 'password') {
+      passwordInput.type = 'text';
+      togglePassword.textContent = '🙈';
+    } else {
+      passwordInput.type = 'password';
+      togglePassword.textContent = '👁️';
+    }
+  });
 
   // Session cookie
   function setSession(username) {
@@ -132,7 +163,7 @@
       const response = await fetch(USERS_JSON_URL, { cache: "no-store" });
       const data = await response.json();
 
-      // Plain-text password check (no hashing)
+      // Plain-text password check
       const valid = data.users.some(u =>
         u.username === username &&
         u.password === password
