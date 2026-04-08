@@ -2,15 +2,15 @@
   "users": [
     {
       "username": "TLC-Terri",
-      "passwordHash": "d7fb81d1086ef907a75a4dde1503262a7d822a5727464f3d35044f03e658ea0ea20b9498f1116e66a44c5abc571e6cfa"
+      "passwordHash": "TLC"
     },
     {
       "username": "TLC-Chad",
-      "passwordHash": "1a8520bd6f5d213ca20837dc3a5480db04603f21041af0cdbb2d9cb5e20aa9526d63e541292bf67abdb8c0b24ac03621"
+      "passwordHash": "TLC"
     },
     {
       "username": "DVR",
-      "passwordHash": "2ccadcc00fc72fa06f63702f487f4f21a169513ed1d8a7b33777bc01e92b7c6aefe1ddf70c7bcc3d28b90b3874e333ee"
+      "passwordHash": "DVR"
     }
   ]
 }

@@ -9,10 +9,7 @@
   <link rel="icon" type="image/png" href="https://cdn0.iconfinder.com/data/icons/social-glyph/30/tumblr-60.png">
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
+    * { box-sizing: border-box; }
     body {
       margin: 0;
       height: 100vh;
@@ -22,7 +19,6 @@
       background: #f5f5f5;
       font-family: Arial, sans-serif;
     }
-
     form {
       background: white;
       padding: 25px;
@@ -30,11 +26,7 @@
       box-shadow: 0 8px 20px rgba(0,0,0,0.1);
       width: 300px;
     }
-
-    form div {
-      margin-bottom: 15px;
-    }
-
+    form div { margin-bottom: 15px; }
     input {
       width: 100%;
       padding: 10px;
@@ -42,29 +34,15 @@
       border: 1px solid #ccc;
       border-radius: 6px;
     }
-
-    .buttons {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
+    .buttons { display: flex; justify-content: space-between; align-items: center; }
     button {
       padding: 10px 15px;
       border: none;
       border-radius: 6px;
       cursor: pointer;
     }
-
-    .primary {
-      background: #333;
-      color: white;
-      position: relative;
-    }
-
-    .secondary {
-      background: #ddd;
-    }
+    .primary { background: #333; color: white; position: relative; }
+    .secondary { background: #ddd; }
 
     /* Spinner */
     .spinner {
@@ -77,18 +55,9 @@
       display: none;
       margin: auto;
     }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    .loading .btn-text {
-      display: none;
-    }
-
-    .loading .spinner {
-      display: inline-block;
-    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading .btn-text { display: none; }
+    .loading .spinner { display: inline-block; }
   </style>
 </head>
 
@@ -132,16 +101,6 @@
   const USERS_JSON_URL =
     "https://raw.githubusercontent.com/MurderMansion-Devs/TLC-AAB/main/users.json";
 
-  // SHA-384
-  async function sha384(text) {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(text);
-    const hashBuffer = await crypto.subtle.digest("SHA-384", data);
-    return Array.from(new Uint8Array(hashBuffer))
-      .map(b => b.toString(16).padStart(2, "0"))
-      .join("");
-  }
-
   // Session cookie
   function setSession(username) {
     const expiry = Date.now() + (60 * 60 * 1000); // 1 hour
@@ -174,11 +133,10 @@
       const response = await fetch(USERS_JSON_URL, { cache: "no-store" });
       const data = await response.json();
 
-      const passwordHash = await sha384(password);
-
+      // Plain-text password check (no hashing)
       const valid = data.users.some(u =>
         u.username === username &&
-        u.passwordHash === passwordHash
+        u.password === password
       );
 
       if (valid) {
