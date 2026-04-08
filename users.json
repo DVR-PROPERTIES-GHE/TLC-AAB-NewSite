@@ -1,8 +1,12 @@
 {
   "users": [
     {
-      "username": "TLC",
-      "passwordHash": "8b89b0569748a4428c584a1afd48352c7039c263769e7250828f1b3ff96e6037e54e2b224612199498713cd731f78e05"
+      "username": "TLC-Terri",
+      "passwordHash": "d7fb81d1086ef907a75a4dde1503262a7d822a5727464f3d35044f03e658ea0ea20b9498f1116e66a44c5abc571e6cfa"
+    },
+    {
+      "username": "TLC-Chad",
+      "passwordHash": "1a8520bd6f5d213ca20837dc3a5480db04603f21041af0cdbb2d9cb5e20aa9526d63e541292bf67abdb8c0b24ac03621"
     },
     {
       "username": "DVR",
