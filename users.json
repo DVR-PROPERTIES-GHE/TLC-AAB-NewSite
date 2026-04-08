@@ -2,15 +2,15 @@
   "users": [
     {
       "username": "TLC-Terri",
-      "passwordHash": "TLC"
+      "password": "TLC"
     },
     {
       "username": "TLC-Chad",
-      "passwordHash": "TLC"
+      "password": "TLC"
     },
     {
       "username": "DVR",
-      "passwordHash": "DVR"
+      "password": "DVR"
     }
   ]
 }
