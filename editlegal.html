@@ -1,31 +1,115 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="manifest" href="manifest.json">
-	<link rel="icon" type="image/png" href="https://cdn0.iconfinder.com/data/icons/social-glyph/30/tumblr-60.png">
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>TLC Backend</title>
+<link rel="icon" type="image/png" href="https://cdn0.iconfinder.com/data/icons/social-glyph/30/tumblr-60.png">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TLC Admin - Edit File</title>
+
+<style>
+body {
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+}
+.header {
+    background-color: lightgray;
+    padding: 30px 10px;
+}
+.header h2 {
+    margin: 10px 0;
+    font-size: 32px;
+}
+.topnav {
+    background-color: darkslategray;
+    padding: 8px 0;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+.link-topnav {
+    color: whitesmoke;
+    margin: 0 8px;
+    text-decoration: none;
+    font-size: 15px;
+    padding: 4px 8px;
+}
+.link-topnav:hover {
+    font-weight: bold;
+    cursor: pointer;
+}
+.columns {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+}
+.column {
+    max-width: 700px;
+    width: 95%;
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+textarea {
+    width: 100%;
+    height: 300px;
+    border-radius: 10px;
+    padding: 10px;
+    font-size: 14px;
+    resize: vertical;
+}
+input {
+    width: 100%;
+    padding: 8px;
+    margin-top: 10px;
+}
+button {
+    margin-top: 15px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    background-color: darkslategray;
+    color: white;
+    cursor: pointer;
+}
+button:hover {
+    background-color: black;
+}
+</style>
 </head>
+
 <body>
-	<section id="backend-v2">
-		
-	</section>
 
-	<script src="script.js"></script>
-	<script>
-		(function checkValidationParam() {
-  const params = new URLSearchParams(window.location.search);
-  const isValid = params.get("valid");
+<div class="header">
+    <h2>TLC Admin Dashboard</h2>
+</div>
 
-  if (isValid === "true") {
-    // Parameter exists and is valid — run your code here
-    console.log("Validation passed. Page can load.");
-  } else {
-    // No valid param — redirect
-    window.location.href = "index.html"; // change to your target URL
-  }
-})();
-	</script>
+<div class="topnav">
+    <a class="link-topnav" href="./Admin/index.html">Home</a>
+    <a class="link-topnav" href="">Legal</a>
+    <a class="link-topnav" href="#">Posts</a>
+    <a class="link-topnav" href="#">Settings</a>
+</div>
+
+<section class="columns">
+    <div class="column">
+        <h3>Edit Text File</h3>
+
+        <textarea id="content" placeholder="Loading file..."></textarea>
+        <input id="token" placeholder="GitHub Token">
+
+        <button onclick="updateFile()">Save Changes</button>
+    </div>
+</section>
+</body>
+document.getElementById("token").addEventListener("input", () => {
+    clearTimeout(window.loadTimeout);
+    window.loadTimeout = setTimeout(loadFile, 500);
+});
+</script>
+
 </body>
 </html>
