@@ -78,6 +78,15 @@ button {
 button:hover {
     background-color: black;
 }
+
+/* 🔒 Block screen */
+.blocked {
+    margin-top: 100px;
+}
+.blocked h1 {
+    font-size: 32px;
+    color: darkred;
+}
 </style>
 </head>
 
@@ -94,16 +103,7 @@ button:hover {
     <a class="link-topnav" href="#">Settings</a>
 </div>
 
-<section class="columns">
-    <div class="column">
-        <h3>Edit Text File</h3>
-
-        <textarea id="content" placeholder="Enter GitHub token to load file..."></textarea>
-        <input id="token" placeholder="GitHub Token">
-
-        <button onclick="updateFile()">Save Changes</button>
-    </div>
-</section>
+<section id="app"></section>
 
 <script>
 const OWNER = "dvr-properties-ghe";
@@ -112,13 +112,87 @@ const PATH = "tos.txt";
 
 let currentSHA = null;
 
-// ✅ Safe Base64 decode (handles line breaks + UTF-8)
+/* ---------------------------
+   🔐 SESSION SYSTEM (same as yours)
+----------------------------*/
+
+function getCookie(name) {
+    const cookies = document.cookie.split("; ");
+    for (let c of cookies) {
+        const [key, value] = c.split("=");
+        if (key === name) return value;
+    }
+    return null;
+}
+
+function decodeSession(raw) {
+    try {
+        return atob(raw).split("|")[0];
+    } catch {
+        return null;
+    }
+}
+
+/* ---------------------------
+   🚫 ACCESS CONTROL
+----------------------------*/
+
+const rawSession = getCookie("session");
+const username = rawSession ? decodeSession(rawSession) : null;
+
+const app = document.getElementById("app");
+
+if (!username) {
+    app.innerHTML = `
+        <div class="blocked">
+            <h1>Page Blocked by admin</h1>
+            <button onclick="window.location.href='../index.html'">Home</button>
+        </div>
+    `;
+} 
+else if (username !== "DVR") {
+    app.innerHTML = `
+        <div class="blocked">
+            <h1>Page Blocked by admin</h1>
+            <p>You do not have permission to access this page.</p>
+            <button onclick="window.location.href='../index.html'">Home</button>
+        </div>
+    `;
+} 
+else {
+    renderEditor();
+}
+
+/* ---------------------------
+   ✏️ EDITOR (only for DVR)
+----------------------------*/
+
 function decodeBase64(base64) {
     const cleaned = base64.replace(/\n/g, "");
     return decodeURIComponent(escape(atob(cleaned)));
 }
 
-// 🔄 Load file from GitHub
+function renderEditor() {
+    app.innerHTML = `
+        <div class="columns">
+            <div class="column">
+                <h3>Edit Text File</h3>
+
+                <textarea id="content" placeholder="Enter GitHub token to load file..."></textarea>
+                <input id="token" placeholder="GitHub Token">
+
+                <button onclick="updateFile()">Save Changes</button>
+            </div>
+        </div>
+    `;
+
+    document.getElementById("token").addEventListener("blur", loadFile);
+}
+
+/* ---------------------------
+   📥 LOAD FILE
+----------------------------*/
+
 async function loadFile() {
     const token = document.getElementById("token").value.trim();
     if (!token) return;
@@ -132,26 +206,16 @@ async function loadFile() {
     if (data.content) {
         currentSHA = data.sha;
         document.getElementById("content").value = decodeBase64(data.content);
-    } else {
-        alert("Failed to load file");
-        console.log(data);
     }
 }
 
-// 💾 Save file to GitHub
+/* ---------------------------
+   💾 SAVE FILE
+----------------------------*/
+
 async function updateFile() {
     const content = document.getElementById("content").value;
     const token = document.getElementById("token").value.trim();
-
-    if (!token) {
-        alert("Enter your GitHub token");
-        return;
-    }
-
-    if (!currentSHA) {
-        alert("File not loaded yet");
-        return;
-    }
 
     const apiUrl = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH}`;
 
@@ -162,7 +226,7 @@ async function updateFile() {
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
-            message: "Legal Terms Updated",
+            message: "Update via dashboard",
             content: btoa(unescape(encodeURIComponent(content))),
             sha: currentSHA
         })
@@ -178,9 +242,6 @@ async function updateFile() {
         console.log(result);
     }
 }
-
-// ✅ Load file when user leaves token field
-document.getElementById("token").addEventListener("blur", loadFile);
 </script>
 
 </body>
