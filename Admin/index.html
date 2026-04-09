@@ -73,7 +73,7 @@ body {
     <h2>TLC Admin Dashboard</h2>
 </div>
 
-<div class="topnav">
+<div class="topnav" id="topnav">
     <a class="link-topnav" href="#">Home</a>
     <a class="link-topnav" href="#">Users</a>
     <a class="link-topnav" href="#">Posts</a>
@@ -88,6 +88,7 @@ body {
 <script>
 (function () {
     const container = document.getElementById('backend-v2');
+    const topnav = document.getElementById('topnav');
 
     function getCookie(name) {
         const cookies = document.cookie.split("; ");
@@ -128,8 +129,9 @@ body {
     function renderDashboard(username) {
         const displayName = usernameMap[username] || username;
 
-        // Only show welcome box for NewUser
+        // If NewUser, hide topnav and show only welcome box
         if (username === "NewUser") {
+            topnav.style.display = "none"; // hide top navigation
             container.innerHTML = `
                 <div class="column">
                     <h3>Welcome, ${displayName}</h3>
@@ -137,17 +139,15 @@ body {
                     <button class="logout-btn" id="simple-logout">Logout</button>
                 </div>
             `;
-
-            // Attach logout handler
             document.getElementById("simple-logout").addEventListener("click", () => {
                 deleteSession();
                 redirectHome();
             });
-
             return;
         }
 
-        // Full dashboard for other users
+        // Show full dashboard for other users
+        topnav.style.display = "flex"; // show topnav
         container.innerHTML = `
             <div class="column">
                 <h3>Welcome, ${displayName}</h3>
