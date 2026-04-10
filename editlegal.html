@@ -14,14 +14,17 @@ body {
     font-family: Arial, sans-serif;
     background-color: #f5f5f5;
 }
+
 .header {
     background-color: lightgray;
     padding: 30px 10px;
 }
+
 .header h2 {
     margin: 10px 0;
     font-size: 32px;
 }
+
 .topnav {
     background-color: darkslategray;
     padding: 8px 0;
@@ -29,6 +32,7 @@ body {
     justify-content: center;
     flex-wrap: wrap;
 }
+
 .link-topnav {
     color: whitesmoke;
     margin: 0 8px;
@@ -36,15 +40,18 @@ body {
     font-size: 15px;
     padding: 4px 8px;
 }
+
 .link-topnav:hover {
     font-weight: bold;
     cursor: pointer;
 }
+
 .columns {
     display: flex;
     justify-content: center;
     padding: 20px;
 }
+
 .column {
     max-width: 700px;
     width: 95%;
@@ -53,6 +60,7 @@ body {
     padding: 20px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
+
 textarea {
     width: 100%;
     height: 300px;
@@ -61,11 +69,7 @@ textarea {
     font-size: 14px;
     resize: vertical;
 }
-input {
-    width: 100%;
-    padding: 8px;
-    margin-top: 10px;
-}
+
 button {
     margin-top: 15px;
     padding: 10px 20px;
@@ -75,14 +79,15 @@ button {
     color: white;
     cursor: pointer;
 }
+
 button:hover {
     background-color: black;
 }
 
-/* 🔒 Block screen */
 .blocked {
     margin-top: 100px;
 }
+
 .blocked h1 {
     font-size: 32px;
     color: darkred;
@@ -98,7 +103,7 @@ button:hover {
 
 <div class="topnav">
     <a class="link-topnav" href="./Admin/index.html">Home</a>
-    <a class="link-topnav" href="">Legal</a>
+    <a class="link-topnav" href="#">Legal</a>
     <a class="link-topnav" href="#">Posts</a>
     <a class="link-topnav" href="#">Settings</a>
 </div>
@@ -106,14 +111,18 @@ button:hover {
 <section id="app"></section>
 
 <script>
+document.addEventListener("DOMContentLoaded", () => {
+
 const OWNER = "dvr-properties-ghe";
 const REPO = "TLC-AAB-NewSite";
 const PATH = "tos.txt";
 
-/* ⚠️ TEST TOKEN (temporary only) */
+/* ⚠️ TEST TOKEN */
 const TOKEN = "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";
 
 let currentSHA = null;
+
+const app = document.getElementById("app");
 
 /* ---------- SESSION ---------- */
 
@@ -134,29 +143,32 @@ function decodeSession(raw) {
     }
 }
 
-/* ---------- ACCESS ---------- */
+/* ---------- ACCESS CHECK ---------- */
 
 const rawSession = getCookie("session");
 const username = rawSession ? decodeSession(rawSession) : null;
-const app = document.getElementById("app");
 
-if (username !== "DVR") {
+if (!app || username !== "DVR") {
     app.innerHTML = `
         <div class="blocked">
             <h1>Page Blocked</h1>
         </div>
     `;
-} else {
-    renderEditor();
+    return;
 }
 
 /* ---------- UTIL ---------- */
 
-function decodeBase64(base64) {
-    return decodeURIComponent(escape(atob(base64.replace(/\n/g, ""))));
+function decodeBase64(str) {
+    try {
+        return atob(str.replace(/\n/g, ""));
+    } catch (e) {
+        console.error(e);
+        return "";
+    }
 }
 
-/* ---------- EDITOR ---------- */
+/* ---------- RENDER UI ---------- */
 
 function renderEditor() {
     app.innerHTML = `
@@ -164,7 +176,7 @@ function renderEditor() {
             <div class="column">
                 <h3>Edit tos.txt</h3>
 
-                <textarea id="content"></textarea>
+                <textarea id="content" placeholder="Loading..."></textarea>
 
                 <button onclick="loadFile()">Load File</button>
                 <button onclick="updateFile()">Save Changes</button>
@@ -172,62 +184,75 @@ function renderEditor() {
         </div>
     `;
 
-    // auto-load on open
     loadFile();
 }
 
-/* ---------- LOAD ---------- */
+/* ---------- LOAD FILE ---------- */
 
-async function loadFile() {
-    const res = await fetch(
-        `https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH}`,
-        {
-            headers: { Authorization: `token ${TOKEN}` }
-        }
-    );
+window.loadFile = async function () {
+    try {
+        const res = await fetch(
+            `https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH}`,
+            {
+                headers: {
+                    Authorization: `token ${TOKEN}`
+                }
+            }
+        );
 
-    const data = await res.json();
+        const data = await res.json();
 
-    if (data.content) {
+        if (!res.ok) throw new Error(data.message);
+
         currentSHA = data.sha;
         document.getElementById("content").value = decodeBase64(data.content);
-    } else {
+
+    } catch (err) {
+        console.error(err);
         alert("Failed to load file");
-        console.log(data);
     }
-}
+};
 
-/* ---------- SAVE ---------- */
+/* ---------- SAVE FILE ---------- */
 
-async function updateFile() {
-    const content = document.getElementById("content").value;
+window.updateFile = async function () {
+    try {
+        const content = document.getElementById("content").value;
 
-    const res = await fetch(
-        `https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH}`,
-        {
-            method: "PUT",
-            headers: {
-                Authorization: `token ${TOKEN}`,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                message: "Update tos.txt via admin panel",
-                content: btoa(unescape(encodeURIComponent(content))),
-                sha: currentSHA
-            })
-        }
-    );
+        const res = await fetch(
+            `https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH}`,
+            {
+                method: "PUT",
+                headers: {
+                    Authorization: `token ${TOKEN}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    message: "Update tos.txt",
+                    content: btoa(unescape(encodeURIComponent(content))),
+                    sha: currentSHA
+                })
+            }
+        );
 
-    const result = await res.json();
+        const result = await res.json();
 
-    if (res.ok) {
-        alert("Saved!");
+        if (!res.ok) throw new Error(result.message);
+
         currentSHA = result.content.sha;
-    } else {
-        alert("Error saving file");
-        console.log(result);
+        alert("Saved!");
+
+    } catch (err) {
+        console.error(err);
+        alert("Save failed");
     }
-}
+};
+
+/* ---------- START ---------- */
+
+renderEditor();
+
+});
 </script>
 
 </body>
