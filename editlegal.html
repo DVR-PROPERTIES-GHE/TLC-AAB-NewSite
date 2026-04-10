@@ -179,7 +179,6 @@ function renderEditor() {
                 <h3>Edit Text File</h3>
 
                 <textarea id="content" placeholder="Enter GitHub token to load file..."></textarea>
-                <input id="token" placeholder="GitHub Token">
 
                 <button onclick="updateFile()">Save Changes</button>
             </div>
@@ -194,7 +193,7 @@ function renderEditor() {
 ----------------------------*/
 
 async function loadFile() {
-    const token = document.getElementById("token").value.trim();
+    const token = "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";
     if (!token) return;
 
     const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH}`, {
