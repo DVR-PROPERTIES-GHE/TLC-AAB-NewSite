@@ -1,10 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" type="image/png" href="https://cdn0.iconfinder.com/data/icons/social-glyph/30/tumblr-60.png">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TLC Admin - Edit File</title>
+
+<style>
+body {
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+}
+.header {
+    background-color: lightgray;
+    padding: 30px 10px;
+}
+.header h2 {
+    margin: 10px 0;
+    font-size: 32px;
+}
+.topnav {
+    background-color: darkslategray;
+    padding: 8px 0;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+.link-topnav {
+    color: whitesmoke;
+    margin: 0 8px;
+    text-decoration: none;
+    font-size: 15px;
+    padding: 4px 8px;
+}
+.link-topnav:hover {
+    font-weight: bold;
+    cursor: pointer;
+}
+.columns {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+}
+.column {
+    max-width: 700px;
+    width: 95%;
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+textarea {
+    width: 100%;
+    height: 300px;
+    border-radius: 10px;
+    padding: 10px;
+    font-size: 14px;
+    resize: vertical;
+}
+input {
+    width: 100%;
+    padding: 8px;
+    margin-top: 10px;
+}
+button {
+    margin-top: 15px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    background-color: darkslategray;
+    color: white;
+    cursor: pointer;
+}
+button:hover {
+    background-color: black;
+}
+
+/* 🔒 Block screen */
+.blocked {
+    margin-top: 100px;
+}
+.blocked h1 {
+    font-size: 32px;
+    color: darkred;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+    <h2>TLC Admin Dashboard</h2>
+</div>
+
+<div class="topnav">
+    <a class="link-topnav" href="./Admin/index.html">Home</a>
+    <a class="link-topnav" href="">Legal</a>
+    <a class="link-topnav" href="#">Posts</a>
+    <a class="link-topnav" href="#">Settings</a>
+</div>
+
+<section id="app"></section>
+
 <script>
 const OWNER = "dvr-properties-ghe";
 const REPO = "TLC-AAB-NewSite";
 const PATH = "tos.txt";
-
-/* ⚠️ TEST TOKEN (temporary only) */
-const TOKEN = "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";
 
 let currentSHA = null;
 
@@ -43,19 +147,19 @@ if (username !== "DVR") {
     renderEditor();
 }
 
-/* ---------- UTIL ---------- */
+/* ---------- EDITOR ---------- */
 
 function decodeBase64(base64) {
     return decodeURIComponent(escape(atob(base64.replace(/\n/g, ""))));
 }
-
-/* ---------- EDITOR ---------- */
 
 function renderEditor() {
     app.innerHTML = `
         <div class="columns">
             <div class="column">
                 <h3>Edit tos.txt</h3>
+
+                <input id="token" placeholder="Enter GitHub token">
 
                 <textarea id="content"></textarea>
 
@@ -64,20 +168,20 @@ function renderEditor() {
             </div>
         </div>
     `;
-
-    // auto-load on open
-    loadFile();
 }
 
 /* ---------- LOAD ---------- */
 
 async function loadFile() {
-    const res = await fetch(
-        `https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH}`,
-        {
-            headers: { Authorization: `token ${TOKEN}` }
-        }
-    );
+    const token = document.getElementById("token").value.trim();
+    if (!token) {
+        alert("Enter token first");
+        return;
+    }
+
+    const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH}`, {
+        headers: { Authorization: `token ${token}` }
+    });
 
     const data = await res.json();
 
@@ -94,22 +198,25 @@ async function loadFile() {
 
 async function updateFile() {
     const content = document.getElementById("content").value;
+    const token = document.getElementById("token").value.trim();
 
-    const res = await fetch(
-        `https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH}`,
-        {
-            method: "PUT",
-            headers: {
-                Authorization: `token ${TOKEN}`,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                message: "Update tos.txt via admin panel",
-                content: btoa(unescape(encodeURIComponent(content))),
-                sha: currentSHA
-            })
-        }
-    );
+    if (!token) {
+        alert("Enter token first");
+        return;
+    }
+
+    const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH}`, {
+        method: "PUT",
+        headers: {
+            Authorization: `token ${token}`,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            message: "Update tos.txt",
+            content: btoa(unescape(encodeURIComponent(content))),
+            sha: currentSHA
+        })
+    });
 
     const result = await res.json();
 
@@ -122,3 +229,6 @@ async function updateFile() {
     }
 }
 </script>
+
+</body>
+</html>
