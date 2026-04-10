@@ -1,120 +1,14 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<link rel="icon" type="image/png" href="https://cdn0.iconfinder.com/data/icons/social-glyph/30/tumblr-60.png">
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TLC Admin - Edit File</title>
-
-<style>
-body {
-    margin: 0;
-    padding: 0;
-    text-align: center;
-    font-family: Arial, sans-serif;
-    background-color: #f5f5f5;
-}
-.header {
-    background-color: lightgray;
-    padding: 30px 10px;
-}
-.header h2 {
-    margin: 10px 0;
-    font-size: 32px;
-}
-.topnav {
-    background-color: darkslategray;
-    padding: 8px 0;
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-.link-topnav {
-    color: whitesmoke;
-    margin: 0 8px;
-    text-decoration: none;
-    font-size: 15px;
-    padding: 4px 8px;
-}
-.link-topnav:hover {
-    font-weight: bold;
-    cursor: pointer;
-}
-.columns {
-    display: flex;
-    justify-content: center;
-    padding: 20px;
-}
-.column {
-    max-width: 700px;
-    width: 95%;
-    background: white;
-    border-radius: 15px;
-    padding: 20px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-}
-textarea {
-    width: 100%;
-    height: 300px;
-    border-radius: 10px;
-    padding: 10px;
-    font-size: 14px;
-    resize: vertical;
-}
-input {
-    width: 100%;
-    padding: 8px;
-    margin-top: 10px;
-}
-button {
-    margin-top: 15px;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 8px;
-    background-color: darkslategray;
-    color: white;
-    cursor: pointer;
-}
-button:hover {
-    background-color: black;
-}
-
-/* 🔒 Block screen */
-.blocked {
-    margin-top: 100px;
-}
-.blocked h1 {
-    font-size: 32px;
-    color: darkred;
-}
-</style>
-</head>
-
-<body>
-
-<div class="header">
-    <h2>TLC Admin Dashboard</h2>
-</div>
-
-<div class="topnav">
-    <a class="link-topnav" href="./Admin/index.html">Home</a>
-    <a class="link-topnav" href="">Legal</a>
-    <a class="link-topnav" href="#">Posts</a>
-    <a class="link-topnav" href="#">Settings</a>
-</div>
-
-<section id="app"></section>
-
 <script>
 const OWNER = "dvr-properties-ghe";
 const REPO = "TLC-AAB-NewSite";
 const PATH = "tos.txt";
 
+/* ⚠️ TEST TOKEN (temporary only) */
+const TOKEN = "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";
+
 let currentSHA = null;
 
-/* ---------------------------
-   🔐 SESSION SYSTEM (same as yours)
-----------------------------*/
+/* ---------- SESSION ---------- */
 
 function getCookie(name) {
     const cookies = document.cookie.split("; ");
@@ -133,111 +27,93 @@ function decodeSession(raw) {
     }
 }
 
-/* ---------------------------
-   🚫 ACCESS CONTROL
-----------------------------*/
+/* ---------- ACCESS ---------- */
 
 const rawSession = getCookie("session");
 const username = rawSession ? decodeSession(rawSession) : null;
-
 const app = document.getElementById("app");
 
-if (!username) {
+if (username !== "DVR") {
     app.innerHTML = `
         <div class="blocked">
-            <h1>Page Blocked by admin</h1>
-            <button onclick="window.location.href='../index.html'">Home</button>
+            <h1>Page Blocked</h1>
         </div>
     `;
-} 
-else if (username !== "DVR") {
-    app.innerHTML = `
-        <div class="blocked">
-            <h1>Page Blocked by admin</h1>
-            <p>You do not have permission to access this page.</p>
-            <button onclick="window.location.href='../index.html'">Home</button>
-        </div>
-    `;
-} 
-else {
+} else {
     renderEditor();
 }
 
-/* ---------------------------
-   ✏️ EDITOR (only for DVR)
-----------------------------*/
+/* ---------- UTIL ---------- */
 
 function decodeBase64(base64) {
-    const cleaned = base64.replace(/\n/g, "");
-    return decodeURIComponent(escape(atob(cleaned)));
+    return decodeURIComponent(escape(atob(base64.replace(/\n/g, ""))));
 }
+
+/* ---------- EDITOR ---------- */
 
 function renderEditor() {
     app.innerHTML = `
         <div class="columns">
             <div class="column">
-                <h3>Edit Text File</h3>
+                <h3>Edit tos.txt</h3>
 
-                <textarea id="content" placeholder="Enter GitHub token to load file..."></textarea>
+                <textarea id="content"></textarea>
 
+                <button onclick="loadFile()">Load File</button>
                 <button onclick="updateFile()">Save Changes</button>
             </div>
         </div>
     `;
 
-    document.getElementById("token").addEventListener("blur", loadFile);
-    
-    const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH}`, {
-        headers: { Authorization: `token ${token}` }
-    });
+    // auto-load on open
+    loadFile();
 }
 
-/* ---------------------------
-   📥 LOAD FILE
-----------------------------*/
+/* ---------- LOAD ---------- */
 
 async function loadFile() {
-    const token = "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";
-    if (!token) return;
-
-    const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH}`, {
-        headers: { Authorization: `token ${token}` }
-    });
+    const res = await fetch(
+        `https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH}`,
+        {
+            headers: { Authorization: `token ${TOKEN}` }
+        }
+    );
 
     const data = await res.json();
 
     if (data.content) {
         currentSHA = data.sha;
         document.getElementById("content").value = decodeBase64(data.content);
+    } else {
+        alert("Failed to load file");
+        console.log(data);
     }
 }
 
-/* ---------------------------
-   💾 SAVE FILE
-----------------------------*/
+/* ---------- SAVE ---------- */
 
 async function updateFile() {
     const content = document.getElementById("content").value;
-    const token = document.getElementById("token").value.trim();
 
-    const apiUrl = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH}`;
+    const res = await fetch(
+        `https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH}`,
+        {
+            method: "PUT",
+            headers: {
+                Authorization: `token ${TOKEN}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                message: "Update tos.txt via admin panel",
+                content: btoa(unescape(encodeURIComponent(content))),
+                sha: currentSHA
+            })
+        }
+    );
 
-    const updateRes = await fetch(apiUrl, {
-        method: "PUT",
-        headers: {
-            "Authorization": `token ${token}`,
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            message: "Update via dashboard",
-            content: btoa(unescape(encodeURIComponent(content))),
-            sha: currentSHA
-        })
-    });
+    const result = await res.json();
 
-    const result = await updateRes.json();
-
-    if (updateRes.ok) {
+    if (res.ok) {
         alert("Saved!");
         currentSHA = result.content.sha;
     } else {
@@ -246,6 +122,3 @@ async function updateFile() {
     }
 }
 </script>
-
-</body>
-</html>
