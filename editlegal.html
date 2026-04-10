@@ -110,6 +110,9 @@ const OWNER = "dvr-properties-ghe";
 const REPO = "TLC-AAB-NewSite";
 const PATH = "tos.txt";
 
+/* ⚠️ TEST TOKEN (temporary only) */
+const TOKEN = "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";
+
 let currentSHA = null;
 
 /* ---------- SESSION ---------- */
@@ -147,19 +150,19 @@ if (username !== "DVR") {
     renderEditor();
 }
 
-/* ---------- EDITOR ---------- */
+/* ---------- UTIL ---------- */
 
 function decodeBase64(base64) {
     return decodeURIComponent(escape(atob(base64.replace(/\n/g, ""))));
 }
+
+/* ---------- EDITOR ---------- */
 
 function renderEditor() {
     app.innerHTML = `
         <div class="columns">
             <div class="column">
                 <h3>Edit tos.txt</h3>
-
-                <input id="token" placeholder="Enter GitHub token">
 
                 <textarea id="content"></textarea>
 
@@ -168,20 +171,20 @@ function renderEditor() {
             </div>
         </div>
     `;
+
+    // auto-load on open
+    loadFile();
 }
 
 /* ---------- LOAD ---------- */
 
 async function loadFile() {
-    const token = document.getElementById("token").value.trim();
-    if (!token) {
-        alert("Enter token first");
-        return;
-    }
-
-    const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH}`, {
-        headers: { Authorization: `token ${token}` }
-    });
+    const res = await fetch(
+        `https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH}`,
+        {
+            headers: { Authorization: `token ${TOKEN}` }
+        }
+    );
 
     const data = await res.json();
 
@@ -198,25 +201,22 @@ async function loadFile() {
 
 async function updateFile() {
     const content = document.getElementById("content").value;
-    const token = document.getElementById("token").value.trim();
 
-    if (!token) {
-        alert("Enter token first");
-        return;
-    }
-
-    const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH}`, {
-        method: "PUT",
-        headers: {
-            Authorization: `token ${token}`,
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            message: "Update tos.txt",
-            content: btoa(unescape(encodeURIComponent(content))),
-            sha: currentSHA
-        })
-    });
+    const res = await fetch(
+        `https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH}`,
+        {
+            method: "PUT",
+            headers: {
+                Authorization: `token ${TOKEN}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                message: "Update tos.txt via admin panel",
+                content: btoa(unescape(encodeURIComponent(content))),
+                sha: currentSHA
+            })
+        }
+    );
 
     const result = await res.json();
 
