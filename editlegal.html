@@ -186,6 +186,10 @@ function renderEditor() {
     `;
 
     document.getElementById("token").addEventListener("blur", loadFile);
+    
+    const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH}`, {
+        headers: { Authorization: `token ${token}` }
+    });
 }
 
 /* ---------------------------
