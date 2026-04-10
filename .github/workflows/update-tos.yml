@@ -1,0 +1,27 @@
+name: Update TOS File
+
+on:
+  workflow_dispatch:
+    inputs:
+      content:
+        description: "New TOS content"
+        required: true
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Write file
+        run: echo "${{ github.event.inputs.content }}" > tos.txt
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add tos.txt
+          git commit -m "Update tos.txt"
+          git push
