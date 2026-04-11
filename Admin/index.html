@@ -3,8 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>TLC Admin Panel</title>
+<title>TLC Supabase Dashboard</title>
 
 <style>
 body {
@@ -13,7 +12,7 @@ body {
     background: #f5f5f5;
 }
 
-/* TOP NAV */
+/* TOPBAR */
 .topnav {
     background: darkslategray;
     color: white;
@@ -23,10 +22,8 @@ body {
     align-items: center;
 }
 
-/* MENU BUTTON */
 .menu-btn {
     cursor: pointer;
-    font-size: 18px;
 }
 
 /* OVERLAY */
@@ -48,13 +45,11 @@ body {
     background: darkslategray;
     color: white;
     z-index: 10;
-    transition: 0.3s ease;
+    transition: 0.3s;
     padding: 15px;
 }
 
-#sidebar.open {
-    left: 0;
-}
+#sidebar.open { left: 0; }
 
 #sidebarUser {
     text-align: center;
@@ -95,25 +90,22 @@ body {
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
-/* USER BUTTONS */
+/* USER SWITCH */
 .usr-row {
     display: flex;
     gap: 10px;
 }
 
 .usr-btn {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    border: 2px solid darkslategray;
+    padding: 10px;
+    background: darkslategray;
+    color: white;
+    border-radius: 6px;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 11px;
+    font-size: 12px;
 }
 
-/* BUTTONS */
+/* BUTTON */
 .logout-btn {
     padding: 8px 15px;
     border: none;
@@ -137,7 +129,7 @@ body {
 <!-- TOP BAR -->
 <div class="topnav">
     <span class="menu-btn" onclick="openSidebar()">☰ Menu</span>
-    <span>TLC Admin System</span>
+    <span>TLC Dashboard</span>
 </div>
 
 <!-- OVERLAY -->
@@ -150,15 +142,23 @@ body {
 
     <a onclick="navigate('dashboard')">Dashboard</a>
     <a onclick="navigate('legal')">Legal</a>
-    <a id="devTab" onclick="navigate('dev')" style="display:none;">Developer Info</a>
+    <a id="devTab" onclick="navigate('dev')" style="display:none;">Developer</a>
     <a onclick="logout()">Logout</a>
 </div>
 
-<!-- MAIN CONTENT -->
+<!-- MAIN -->
 <div class="main" id="backend-v2"></div>
+
+<!-- SUPABASE -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
 (function () {
+
+    const supabaseUrl = "YOUR_SUPABASE_URL";
+    const supabaseKey = "YOUR_SUPABASE_ANON_KEY";
+
+    const client = supabase.createClient(supabaseUrl, supabaseKey);
 
     const container = document.getElementById("backend-v2");
     const sidebar = document.getElementById("sidebar");
@@ -166,129 +166,115 @@ body {
     const sidebarUser = document.getElementById("sidebarUser");
     const devTab = document.getElementById("devTab");
 
-    // ================= COOKIE =================
-    function getCookie(name) {
-        const cookies = document.cookie.split("; ");
-        for (let c of cookies) {
-            const [key, value] = c.split("=");
-            if (key === name) return value;
-        }
-        return null;
-    }
-
-    function deleteSession() {
-        document.cookie = "session=; path=/; max-age=0";
-        window.location.href = "../index.html";
-    }
-
-    // ================= USERS =================
-    const usernameMap = {
-        DVR: "Developer",
-        "TLC-Chad": "Chad",
-        "TLC-Terri": "Terri",
-        NewUser: "NewUser"
-    };
-
-    const userImgs = {
-        DVR: "https://i.pravatar.cc/100?img=12",
-        "TLC-Chad": "https://i.pravatar.cc/100?img=32",
-        "TLC-Terri": "https://i.pravatar.cc/100?img=47",
-        NewUser: "https://i.pravatar.cc/100?img=5"
-    };
-
+    // ================= USER ROLE MAP =================
     const roles = {
-        DVR: "dev",
-        "TLC-Chad": "admin",
-        "TLC-Terri": "admin",
-        NewUser: "blocked"
+        "chad@tlc.inc": "admin",
+        "terri@tlc.inc": "admin",
+        "dvr@tlc.inc": "dev"
     };
 
-    // ================= SESSION =================
-    const raw = getCookie("session");
+    const names = {
+        "chad@tlc.inc": "Chad",
+        "terri@tlc.inc": "Terri",
+        "dvr@tlc.inc": "Developer"
+    };
 
-    if (!raw) window.location.href = "../index.html";
+    const imgs = {
+        "chad@tlc.inc": "https://i.pravatar.cc/100?img=32",
+        "terri@tlc.inc": "https://i.pravatar.cc/100?img=47",
+        "dvr@tlc.inc": "https://i.pravatar.cc/100?img=12"
+    };
 
-    let currentUser;
+    let userEmail = null;
 
-    try {
-        const [user, expiry] = atob(raw).split("|");
+    // ================= AUTH CHECK =================
+    async function init() {
 
-        if (Date.now() > +expiry) {
-            deleteSession();
+        const { data } = await client.auth.getUser();
+
+        if (!data.user) {
+            window.location.href = "../index.html";
             return;
         }
 
-        currentUser = user;
+        userEmail = data.user.email;
 
-    } catch {
-        deleteSession();
-        return;
-    }
-
-    // ================= BLOCK =================
-    if (roles[currentUser] === "blocked") {
-        container.innerHTML = `
-            <div class="column blocked">
-                <h2>Access Denied</h2>
-                <button class="logout-btn" onclick="logout()">Logout</button>
-            </div>
-        `;
-        window.logout = deleteSession;
-        return;
+        renderSidebar();
+        router();
     }
 
     // ================= SIDEBAR =================
-    function openSidebar() {
-        sidebar.classList.add("open");
-        overlay.style.display = "block";
-    }
+    function renderSidebar() {
 
-    function closeSidebar() {
-        sidebar.classList.remove("open");
-        overlay.style.display = "none";
-    }
-
-    function updateSidebar() {
         sidebarUser.innerHTML = `
-            <img src="${userImgs[currentUser]}">
-            <h3>${usernameMap[currentUser]}</h3>
+            <img src="${imgs[userEmail] || 'https://i.pravatar.cc/100'}">
+            <h3>${names[userEmail] || userEmail.split("@")[0]}</h3>
         `;
 
-        if (currentUser === "DVR") {
+        if (roles[userEmail] === "dev") {
             devTab.style.display = "block";
         }
     }
 
-    // ================= DASHBOARD =================
-    function dashboard() {
+    // ================= SIDEBAR CONTROLS =================
+    window.openSidebar = () => {
+        sidebar.classList.add("open");
+        overlay.style.display = "block";
+    };
 
-        updateSidebar();
+    window.closeSidebar = () => {
+        sidebar.classList.remove("open");
+        overlay.style.display = "none";
+    };
+
+    // ================= LOGOUT =================
+    window.logout = async () => {
+        await client.auth.signOut();
+        window.location.href = "../index.html";
+    };
+
+    // ================= ROUTER =================
+    function router() {
+
+        const page = location.hash.replace("#", "") || "dashboard";
+
+        if (page === "legal") renderLegal();
+        else if (page === "dev") renderDev();
+        else renderDashboard();
+    }
+
+    window.navigate = function (p) {
+        location.hash = p;
+        closeSidebar();
+    };
+
+    // ================= DASHBOARD =================
+    function renderDashboard() {
 
         container.innerHTML = `
             <div class="column">
                 <h2>Dashboard</h2>
-                <p>Welcome ${usernameMap[currentUser]}</p>
+                <p>Welcome ${names[userEmail] || "User"}</p>
                 <button class="logout-btn" onclick="logout()">Logout</button>
                 <button class="logout-btn" onclick="openSidebar()">Menu</button>
             </div>
 
             <div class="column">
-                <h3>Switch User</h3>
+                <h3>User Switch (demo)</h3>
+
                 <div class="usr-row">
-
-                    <div class="usr-btn" onclick="switchUser('TLC-Chad')">Chad</div>
-                    <div class="usr-btn" onclick="switchUser('TLC-Terri')">Terri</div>
-                    <div class="usr-btn" onclick="switchUser('DVR')">Dev</div>
-
+                    <div class="usr-btn" onclick="switchUser('chad@tlc.inc')">Chad</div>
+                    <div class="usr-btn" onclick="switchUser('terri@tlc.inc')">Terri</div>
+                    <div class="usr-btn" onclick="switchUser('dvr@tlc.inc')">Dev</div>
                 </div>
+
+                <p style="font-size:12px;">(Only works if those accounts exist in Supabase)</p>
             </div>
         `;
     }
 
     // ================= LEGAL =================
-    function legal() {
-
-        updateSidebar();
+    function renderLegal() {
 
         container.innerHTML = `
             <div class="column">
@@ -305,49 +291,29 @@ body {
     }
 
     // ================= DEV =================
-    function dev() {
+    function renderDev() {
 
-        if (currentUser !== "DVR") return;
+        if (roles[userEmail] !== "dev") return;
 
         container.innerHTML = `
             <div class="column">
-                <h2>Developer Info</h2>
-                <p>System Active</p>
+                <h2>Developer Panel</h2>
+                <p>System Online</p>
                 <button class="logout-btn" onclick="logout()">Logout</button>
                 <button class="logout-btn" onclick="openSidebar()">Menu</button>
             </div>
         `;
     }
 
-    // ================= ROUTER =================
-    function router() {
-
-        const page = location.hash.replace("#", "") || "dashboard";
-
-        if (page === "legal") legal();
-        else if (page === "dev") dev();
-        else dashboard();
-    }
-
-    // ================= GLOBALS =================
-    window.logout = deleteSession;
-    window.openSidebar = openSidebar;
-    window.closeSidebar = closeSidebar;
-
-    window.navigate = function (p) {
-        location.hash = p;
-        closeSidebar();
+    // ================= SWITCH USER (OPTIONAL DEMO) =================
+    window.switchUser = async function (email) {
+        alert("Switching users requires real login. Please log out and log back in.");
     };
 
-    window.switchUser = function (u) {
-        const expiry = Date.now() + (60 * 60 * 1000);
-        document.cookie = "session=" + btoa(u + "|" + expiry) + "; path=/";
-        location.reload();
-    };
-
+    // ================= INIT =================
     window.addEventListener("hashchange", router);
 
-    router();
+    init();
 
 })();
 </script>

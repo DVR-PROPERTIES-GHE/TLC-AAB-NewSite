@@ -1,200 +1,114 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Login | TLC Backend</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>TLC Login</title>
 
-  <link rel="manifest" href="manifest.json">
-  <link rel="icon" type="image/png" href="https://cdn0.iconfinder.com/data/icons/social-glyph/30/tumblr-60.png">
+<style>
+body {
+  margin: 0;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: Arial;
+  background: #f5f5f5;
+}
 
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: #f5f5f5;
-      font-family: Arial, sans-serif;
-    }
-    form {
-      background: white;
-      padding: 25px;
-      border-radius: 10px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-      width: 300px;
-    }
-    form div { margin-bottom: 15px; position: relative; }
-    input {
-      width: 100%;
-      padding: 10px;
-      margin-top: 5px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-    }
-    .buttons { display: flex; justify-content: space-between; align-items: center; }
-    button {
-      padding: 10px 15px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    .primary { background: #333; color: white; position: relative; }
-    .secondary { background: #ddd; }
+form {
+  background: white;
+  padding: 25px;
+  border-radius: 10px;
+  width: 320px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
 
-    /* Spinner */
-    .spinner {
-      width: 16px;
-      height: 16px;
-      border: 2px solid #fff;
-      border-top: 2px solid transparent;
-      border-radius: 50%;
-      animation: spin 0.6s linear infinite;
-      display: none;
-      margin: auto;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .loading .btn-text { display: none; }
-    .loading .spinner { display: inline-block; }
+input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
 
-    /* Eye icon for show/hide password */
-    .password-wrapper {
-      position: relative;
-    }
-    .password-wrapper .toggle-eye {
-      position: absolute;
-      top: 50%;
-      right: 10px;
-      transform: translateY(-50%);
-      cursor: pointer;
-      font-size: 14px;
-      color: #666;
-      user-select: none;
-    }
-    .password-wrapper input {
-      padding-right: 30px;
-    }
-  </style>
+button {
+  width: 100%;
+  padding: 10px;
+  background: darkslategray;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.6;
+}
+</style>
 </head>
 
 <body>
 
 <form id="login-form">
-  <div>
-    <label for="username">Username</label>
-    <input id="username" type="text" placeholder="Enter username" required>
-  </div>
+  <h2>Login</h2>
 
-  <div class="password-wrapper">
-    <label for="password">Password</label>
-    <input id="password" type="password" placeholder="Enter password" required>
-    <span class="toggle-eye" id="toggle-password">👁️</span>
-  </div>
+  <label>Username</label>
+  <input id="username" type="text" placeholder="Enter username" required>
 
-  <div class="buttons">
-    <button type="submit" class="primary" id="sign-in-btn">
-      <span class="btn-text">Sign In</span>
-      <span class="spinner"></span>
-    </button>
+  <label>Password</label>
+  <input id="password" type="password" placeholder="Enter password" required>
 
-    <button type="button" class="secondary" onclick="location.href='index.html'">
-      Lost?
-    </button>
-  </div>
-
-  <div>
-    <small>Tip: Username is case-sensitive.</small>
-  </div>
+  <button id="login-btn" type="submit">Sign In</button>
 </form>
 
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
-(function () {
+const supabaseUrl = "YOUR_SUPABASE_URL";
+const supabaseKey = "YOUR_SUPABASE_ANON_KEY";
 
-  const form = document.getElementById('login-form');
-  const usernameInput = document.getElementById('username');
-  const passwordInput = document.getElementById('password');
-  const signInBtn = document.getElementById('sign-in-btn');
-  const togglePassword = document.getElementById('toggle-password');
+const client = supabase.createClient(supabaseUrl, supabaseKey);
 
-  const USERS_JSON_URL = "./users.json"; // Make sure users.json is in the same folder
+const form = document.getElementById("login-form");
+const btn = document.getElementById("login-btn");
 
-  // Toggle show/hide password
-  togglePassword.addEventListener('click', () => {
-    if (passwordInput.type === 'password') {
-      passwordInput.type = 'text';
-      togglePassword.textContent = '🙈';
-    } else {
-      passwordInput.type = 'password';
-      togglePassword.textContent = '👁️';
-    }
-  });
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-  // Session cookie
-  function setSession(username) {
-    const expiry = Date.now() + (60 * 60 * 1000); // 1 hour
-    const sessionData = btoa(username + "|" + expiry);
-    document.cookie = "session=" + sessionData + "; path=/";
-  }
+  const username = document.getElementById("username").value.trim();
+  const password = document.getElementById("password").value;
 
-  function stopLoading() {
-    signInBtn.classList.remove("loading");
-    signInBtn.disabled = false;
-  }
+  // 🔥 convert username → email
+  const email = username.toLowerCase() + "@tlc.inc";
 
-  // Login
-  form.addEventListener('submit', async function (e) {
-    e.preventDefault();
+  btn.disabled = true;
+  btn.textContent = "Logging in...";
 
-    const username = usernameInput.value.trim();
-    const password = passwordInput.value;
+  try {
+    const { data, error } = await client.auth.signInWithPassword({
+      email,
+      password
+    });
 
-    if (!username || !password) {
-      alert("Please fill both fields.");
+    if (error) {
+      alert("Login failed: " + error.message);
+      btn.disabled = false;
+      btn.textContent = "Sign In";
       return;
     }
 
-    // Start loading
-    signInBtn.classList.add("loading");
-    signInBtn.disabled = true;
+    // success
+    window.location.href = "./Admin/index.html";
 
-    try {
-      const response = await fetch(USERS_JSON_URL, { cache: "no-store" });
-      const data = await response.json();
-
-      // Plain-text password check
-      const valid = data.users.some(u =>
-        u.username === username &&
-        u.password === password
-      );
-
-      if (valid) {
-        setSession(username);
-        window.location.href = "./Admin/index.html";
-      } else {
-        flashInvalid();
-        stopLoading();
-      }
-
-    } catch (err) {
-      console.error(err);
-      alert("Authentication service unavailable.");
-      stopLoading();
-    }
-  });
-
-  // Shake animation
-  function flashInvalid() {
-    form.animate([
-      { transform: 'translateX(0)' },
-      { transform: 'translateX(-8px)' },
-      { transform: 'translateX(8px)' },
-      { transform: 'translateX(0)' }
-    ], { duration: 300 });
+  } catch (err) {
+    alert("Unexpected error");
+    btn.disabled = false;
+    btn.textContent = "Sign In";
   }
-
-})();
+});
 </script>
 
 </body>
