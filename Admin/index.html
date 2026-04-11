@@ -3,13 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TLC Admin Dashboard</title>
+<title>TLC Supabase Dashboard</title>
 
 <style>
 body {
     margin: 0;
     font-family: Arial, sans-serif;
     background: #f5f5f5;
+    overflow-x: hidden; /* 🔥 prevents any sidebar peeking */
 }
 
 /* ================= TOPBAR ================= */
@@ -24,7 +25,6 @@ body {
 
 .menu-btn {
     cursor: pointer;
-    font-size: 18px;
 }
 
 /* ================= OVERLAY ================= */
@@ -33,32 +33,32 @@ body {
     inset: 0;
     background: rgba(0,0,0,0.5);
     display: none;
-    z-index: 900;
+    z-index: 9;
 }
 
-#overlay.show {
-    display: block;
-}
-
-/* ================= SIDEBAR (FIXED HIDDEN STATE) ================= */
+/* ================= SIDEBAR (FIXED PROPERLY) ================= */
 #sidebar {
     position: fixed;
     top: 0;
-    left: -280px;   /* 👈 IMPORTANT: fully hidden */
+    left: 0;
     width: 260px;
     height: 100%;
     background: darkslategray;
     color: white;
-    z-index: 1000;
-    transition: left 0.3s ease;
+    z-index: 10;
     padding: 15px;
+    box-sizing: border-box;
+
+    /* 🔥 KEY FIX */
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
 }
 
 #sidebar.open {
-    left: 0;
+    transform: translateX(0);
 }
 
-/* SIDEBAR HEADER */
+/* SIDEBAR USER */
 #sidebarUser {
     text-align: center;
     padding: 10px;
@@ -66,8 +66,8 @@ body {
 }
 
 #sidebarUser img {
-    width: 60px;
-    height: 60px;
+    width: 65px;
+    height: 65px;
     border-radius: 50%;
 }
 
@@ -75,9 +75,9 @@ body {
 #sidebar a {
     display: block;
     padding: 12px;
+    cursor: pointer;
     color: white;
     text-decoration: none;
-    cursor: pointer;
 }
 
 #sidebar a:hover {
@@ -99,7 +99,7 @@ body {
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
-/* USER BUTTONS */
+/* USER SWITCH */
 .usr-row {
     display: flex;
     gap: 10px;
@@ -129,7 +129,7 @@ body {
 
 <body>
 
-<!-- TOP NAV -->
+<!-- TOP BAR -->
 <div class="topnav">
     <span class="menu-btn" onclick="openSidebar()">☰ Menu</span>
     <span>TLC Dashboard</span>
@@ -140,18 +140,15 @@ body {
 
 <!-- SIDEBAR -->
 <div id="sidebar">
-
-    <div id="sidebarUser">
-        <img src="https://i.pravatar.cc/100">
-        <p>Loading...</p>
-    </div>
+    <div id="sidebarUser"></div>
 
     <a onclick="navigate('dashboard')">Dashboard</a>
     <a onclick="navigate('legal')">Legal</a>
+    <a id="devTab" onclick="navigate('dev')" style="display:none;">Developer</a>
     <a onclick="logout()">Logout</a>
 </div>
 
-<!-- MAIN CONTENT -->
+<!-- MAIN -->
 <div class="main" id="backend-v2"></div>
 
 <!-- SUPABASE -->
@@ -161,7 +158,7 @@ body {
 (function () {
 
     const supabaseUrl = "https://bcluaogmfvweeggfctio.supabase.co";
-    const supabaseKey = "YOUR_ANON_KEY";
+    const supabaseKey = "YOUR_ANON_KEY_HERE";
 
     const client = supabase.createClient(supabaseUrl, supabaseKey);
 
@@ -169,8 +166,15 @@ body {
     const sidebar = document.getElementById("sidebar");
     const overlay = document.getElementById("overlay");
     const sidebarUser = document.getElementById("sidebarUser");
+    const devTab = document.getElementById("devTab");
 
-    // ================= USER MAP =================
+    // ================= USERS =================
+    const roles = {
+        "chad@tlc.inc": "admin",
+        "terri@tlc.inc": "admin",
+        "dvr@tlc.inc": "dev"
+    };
+
     const names = {
         "chad@tlc.inc": "Chad",
         "terri@tlc.inc": "Terri",
@@ -199,21 +203,25 @@ body {
 
         sidebarUser.innerHTML = `
             <img src="${imgs[userEmail] || 'https://i.pravatar.cc/100'}">
-            <p>${names[userEmail] || userEmail.split("@")[0]}</p>
+            <h3>${names[userEmail] || userEmail.split("@")[0]}</h3>
         `;
+
+        if (roles[userEmail] === "dev") {
+            devTab.style.display = "block";
+        }
 
         router();
     }
 
-    // ================= SIDEBAR CONTROL =================
+    // ================= SIDEBAR =================
     window.openSidebar = function () {
         sidebar.classList.add("open");
-        overlay.classList.add("show");
+        overlay.style.display = "block";
     };
 
     window.closeSidebar = function () {
         sidebar.classList.remove("open");
-        overlay.classList.remove("show");
+        overlay.style.display = "none";
     };
 
     // ================= LOGOUT =================
@@ -224,9 +232,11 @@ body {
 
     // ================= ROUTER =================
     function router() {
+
         const page = location.hash.replace("#", "") || "dashboard";
 
         if (page === "legal") renderLegal();
+        else if (page === "dev") renderDev();
         else renderDashboard();
     }
 
@@ -267,7 +277,23 @@ body {
             .then(t => document.getElementById("tos").textContent = t);
     }
 
-    // ================= START =================
+    // ================= DEV =================
+    function renderDev() {
+
+        if (roles[userEmail] !== "dev") return;
+
+        container.innerHTML = `
+            <div class="column">
+                <h2>Developer Panel</h2>
+                <p>System Online</p>
+
+                <button class="logout-btn" onclick="logout()">Logout</button>
+                <button class="logout-btn" onclick="openSidebar()">Menu</button>
+            </div>
+        `;
+    }
+
+    // ================= INIT =================
     window.addEventListener("hashchange", router);
     init();
 
