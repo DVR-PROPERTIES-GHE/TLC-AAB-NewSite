@@ -5,17 +5,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Legal - TLC Anchor And Barrier</title>
+<title>TLC Legal Dashboard</title>
 
 <style>
 body {
     margin: 0;
     padding: 0;
-    text-align: center;
     font-family: Arial, sans-serif;
     background-color: #f5f5f5;
+    text-align: center;
 }
 
+/* HEADER */
 .header {
     background-color: lightgray;
     padding: 30px 10px;
@@ -25,6 +26,7 @@ body {
     font-size: 32px;
 }
 
+/* NAV */
 .topnav {
     background-color: darkslategray;
     padding: 8px 0;
@@ -38,19 +40,22 @@ body {
     text-decoration: none;
     font-size: 15px;
     padding: 4px 8px;
+    cursor: pointer;
 }
 .link-topnav:hover {
     font-weight: bold;
-    cursor: pointer;
 }
 
+/* LAYOUT */
 .columns {
     display: flex;
     justify-content: center;
     padding: 20px;
     flex-wrap: wrap;
+    gap: 20px;
 }
 
+/* CARD */
 .column {
     max-width: 800px;
     width: 90%;
@@ -61,6 +66,7 @@ body {
     text-align: left;
 }
 
+/* USER ICON */
 .V2_Img {
     min-height: 48px;
     min-width: 48px;
@@ -73,6 +79,36 @@ body {
     font-weight: bold;
 }
 
+/* USER SWITCHER */
+.V2_ImagePg {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    padding: 10px;
+    justify-content: center;
+}
+
+.usr-btn {
+    min-height: 48px;
+    min-width: 48px;
+    border-radius: 50%;
+    background-color: white;
+    border: 2px solid darkslategray;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+/* TOS TEXT */
+#output {
+    white-space: pre-wrap;
+    line-height: 1.6;
+    font-size: 15px;
+}
+
+/* BUTTON */
 .logout-btn {
     margin-top: 15px;
     padding: 8px 15px;
@@ -83,19 +119,13 @@ body {
     cursor: pointer;
 }
 
-#output {
-    white-space: pre-wrap;
-    line-height: 1.6;
-    font-size: 15px;
-}
-
 </style>
 </head>
 
 <body>
 
 <div class="header">
-    <h2>Legal</h2>
+    <h2>Legal Dashboard</h2>
 </div>
 
 <div class="topnav" id="topnav">
@@ -108,22 +138,20 @@ body {
 
 <script>
 (function () {
-    const container = document.getElementById('backend-v2');
-    const topnav = document.getElementById('topnav');
+
+    const container = document.getElementById("backend-v2");
+
+    const usernameMap = {
+        "DVR": "Dev",
+        "TLC-Chad": "Chad",
+        "TLC-Terri": "Terri",
+        "NewUser": "New"
+    };
 
     function getCookie(name) {
-        const cookies = document.cookie.split("; ");
-        for (let c of cookies) {
-            const [key, value] = c.split("=");
-            if (key === name) return value;
-        }
-        return null;
-    }
-
-    function setSession(username) {
-        const expiry = Date.now() + (60 * 60 * 1000);
-        const sessionData = btoa(username + "|" + expiry);
-        document.cookie = "session=" + sessionData + "; path=/";
+        return document.cookie.split("; ")
+            .find(row => row.startsWith(name + "="))
+            ?.split("=")[1];
     }
 
     function deleteSession() {
@@ -134,119 +162,93 @@ body {
         window.location.href = "../index.html";
     }
 
-    const usernameMap = {
-        "DVR": "Developer",
-        "TLC-Chad": "Chad",
-        "TLC-Terri": "Terri",
-        "NewUser": "NewUser"
-    };
-
     const raw = getCookie("session");
     if (!raw) {
         redirectHome();
         return;
     }
 
-    function renderDashboard(username) {
-        const displayName = usernameMap[username] || username;
-
-        if (window.isLegalPage) {
-
-            topnav.style.display = "flex";
-
-            container.innerHTML = `
-
-                <div class="column">
-                    <div style="display:flex; align-items:center; gap:15px;">
-                        <div class="V2_Img">${displayName}</div>
-                        <div>
-                            <h3 style="margin:0;">${displayName}</h3>
-                            <p style="margin:0;">Viewing Legal Page</p>
-                        </div>
-                    </div>
-
-                    <button class="logout-btn" id="simple-logout">Logout</button>
-                </div>
-
-                <div class="column V2_ImagePg">
-                    <div class="V2_Img usr-btn" data-user="DVR">Dev</div>
-                    <div class="V2_Img usr-btn" data-user="TLC-Chad">Chad</div>
-                    <div class="V2_Img usr-btn" data-user="TLC-Terri">Terri</div>
-                    <div class="V2_Img usr-btn" data-user="NewUser">___</div>
-                </div>
-
-                <div class="column">
-                    <h3>Terms of Service</h3>
-                    <div id="output">Loading...</div>
-                </div>
-            `;
-
-            fetch("https://dvr-properties-ghe.github.io/TLC-AAB-NewSite/tos.txt")
-                .then(r => r.text())
-                .then(text => {
-                    document.getElementById("output").textContent = text;
-                })
-                .catch(err => {
-                    document.getElementById("output").textContent = "Error: " + err;
-                });
-
-            document.getElementById("simple-logout").addEventListener("click", () => {
-                deleteSession();
-                redirectHome();
-            });
-
-            container.querySelectorAll(".usr-btn").forEach(btn => {
-                btn.addEventListener("click", () => {
-                    const newUser = btn.dataset.user;
-                    setSession(newUser);
-                    renderDashboard(newUser);
-                });
-            });
-
+    let user;
+    try {
+        const [u, exp] = atob(raw).split("|");
+        if (Date.now() > parseInt(exp)) {
+            deleteSession();
+            redirectHome();
             return;
         }
+        user = u;
+    } catch {
+        deleteSession();
+        redirectHome();
+        return;
+    }
 
-        // fallback simple view
+    function render(user) {
+
+        const display = usernameMap[user] || user;
+
         container.innerHTML = `
+
+            <!-- USER CARD -->
             <div class="column">
-                <div class="V2_Img" style="margin:auto;">${displayName}</div>
-                <h3>Welcome ${displayName}</h3>
-                <button class="logout-btn" id="simple-logout">Logout</button>
+                <div style="display:flex; gap:15px; align-items:center;">
+                    <div class="V2_Img">${display}</div>
+                    <div>
+                        <h3 style="margin:0;">${display}</h3>
+                        <p style="margin:0;">Viewing Legal</p>
+                    </div>
+                </div>
+
+                <button class="logout-btn" id="logout">Logout</button>
+            </div>
+
+            <!-- USER SWITCHER -->
+            <div class="column V2_ImagePg">
+                <div class="usr-btn" data-user="DVR">Dev</div>
+                <div class="usr-btn" data-user="TLC-Chad">Chad</div>
+                <div class="usr-btn" data-user="TLC-Terri">Terri</div>
+                <div class="usr-btn" data-user="NewUser">New</div>
+            </div>
+
+            <!-- TOS POST CARD -->
+            <div class="column">
+                <h3>Terms of Service</h3>
+                <div id="output">Loading...</div>
             </div>
         `;
 
-        document.getElementById("simple-logout").addEventListener("click", () => {
+        // LOAD TOS
+        fetch("https://dvr-properties-ghe.github.io/TLC-AAB-NewSite/tos.txt")
+            .then(r => r.text())
+            .then(t => {
+                document.getElementById("output").textContent = t;
+            })
+            .catch(e => {
+                document.getElementById("output").textContent = "Error loading TOS";
+            });
+
+        // LOGOUT
+        document.getElementById("logout").onclick = () => {
             deleteSession();
             redirectHome();
+        };
+
+        // USER SWITCH
+        container.querySelectorAll(".usr-btn").forEach(btn => {
+            btn.onclick = () => {
+                const newUser = btn.dataset.user;
+                document.cookie =
+                    "session=" + btoa(newUser + "|" + (Date.now() + 3600000)) +
+                    "; path=/";
+
+                render(newUser);
+            };
         });
     }
 
-    try {
-        const [user, expiry] = atob(raw).split("|");
-
-        if (Date.now() > parseInt(expiry)) {
-            deleteSession();
-            redirectHome();
-            return;
-        }
-
-        renderDashboard(user);
-
-    } catch (e) {
-        deleteSession();
-        redirectHome();
-    }
-
-    document.getElementById("logout-btn").addEventListener("click", () => {
-        deleteSession();
-        redirectHome();
-    });
+    render(user);
 
 })();
-</script>
-
-<script>
-window.isLegalPage = true;
 </script>
 
 </body>
