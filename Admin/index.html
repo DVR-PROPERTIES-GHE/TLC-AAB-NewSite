@@ -1,321 +1,208 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TLC Supabase Dashboard</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>TLC Login</title>
 
 <style>
 body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #f5f5f5;
+  margin: 0;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: Arial;
+  background: #f5f5f5;
 }
 
-/* TOPBAR */
-.topnav {
-    background: darkslategray;
-    color: white;
-    padding: 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+/* LOGIN CARD */
+form {
+  background: white;
+  padding: 25px;
+  border-radius: 10px;
+  width: 320px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
 }
 
-.menu-btn {
-    cursor: pointer;
+input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
 }
 
-/* OVERLAY */
-#overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.5);
-    display: none;
-    z-index: 5;
+button {
+  width: 100%;
+  padding: 10px;
+  background: darkslategray;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
 }
 
-/* SIDEBAR */
+button:disabled {
+  opacity: 0.6;
+}
+
+/* ========================= */
+/* SIDEBAR SYSTEM (FIXED)    */
+/* ========================= */
+
 #sidebar {
-    position: fixed;
-    top: 0;
-    left: -260px;
-    width: 260px;
-    height: 100%;
-    background: darkslategray;
-    color: white;
-    z-index: 10;
-    transition: 0.3s;
-    padding: 15px;
+  position: fixed;
+  top: 0;
+  left: -280px; /* 👈 HIDDEN BY DEFAULT */
+  width: 260px;
+  height: 100%;
+  background: darkslategray;
+  color: white;
+  z-index: 1000;
+  transition: left 0.3s ease;
+  padding: 15px;
 }
 
-#sidebar.open { left: 0; }
+#sidebar.open {
+  left: 0; /* 👈 SHOW ONLY WHEN OPEN */
+}
 
+/* DARK OVERLAY */
+#overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: none;
+  z-index: 999;
+}
+
+#overlay.show {
+  display: block;
+}
+
+/* SIDEBAR HEADER */
 #sidebarUser {
-    text-align: center;
-    padding: 10px;
-    border-bottom: 1px solid rgba(255,255,255,0.2);
+  text-align: center;
+  padding: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.2);
 }
 
 #sidebarUser img {
-    width: 65px;
-    height: 65px;
-    border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
 }
 
+/* LINKS */
 #sidebar a {
-    display: block;
-    padding: 12px;
-    cursor: pointer;
-    color: white;
-    text-decoration: none;
+  display: block;
+  padding: 12px;
+  color: white;
+  text-decoration: none;
+  cursor: pointer;
 }
 
 #sidebar a:hover {
-    background: rgba(255,255,255,0.1);
-}
-
-/* MAIN */
-.main {
-    padding: 20px;
-}
-
-/* CARD */
-.column {
-    max-width: 800px;
-    margin: 15px auto;
-    background: white;
-    padding: 20px;
-    border-radius: 15px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-}
-
-/* USER SWITCH */
-.usr-row {
-    display: flex;
-    gap: 10px;
-}
-
-.usr-btn {
-    padding: 10px;
-    background: darkslategray;
-    color: white;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 12px;
-}
-
-/* BUTTON */
-.logout-btn {
-    padding: 8px 15px;
-    border: none;
-    background: darkslategray;
-    color: white;
-    border-radius: 6px;
-    cursor: pointer;
-    margin-top: 10px;
-}
-
-/* BLOCK SCREEN */
-.blocked {
-    text-align: center;
-    padding: 80px;
+  background: rgba(255,255,255,0.1);
 }
 </style>
 </head>
 
 <body>
 
-<!-- TOP BAR -->
-<div class="topnav">
-    <span class="menu-btn" onclick="openSidebar()">☰ Menu</span>
-    <span>TLC Dashboard</span>
+<!-- SIDEBAR (hidden on login page but ready for dashboard reuse) -->
+<div id="sidebar">
+  <div id="sidebarUser">
+    <img src="https://i.pravatar.cc/100">
+    <p>Loading...</p>
+  </div>
+
+  <a>Dashboard</a>
+  <a>Legal</a>
+  <a onclick="logout()">Logout</a>
 </div>
 
 <!-- OVERLAY -->
 <div id="overlay" onclick="closeSidebar()"></div>
 
-<!-- SIDEBAR -->
-<div id="sidebar">
+<!-- LOGIN FORM -->
+<form id="login-form">
+  <h2>Login</h2>
 
-    <div id="sidebarUser"></div>
+  <label>Username</label>
+  <input id="username" type="text" placeholder="Enter username" required>
 
-    <a onclick="navigate('dashboard')">Dashboard</a>
-    <a onclick="navigate('legal')">Legal</a>
-    <a id="devTab" onclick="navigate('dev')" style="display:none;">Developer</a>
-    <a onclick="logout()">Logout</a>
-</div>
+  <label>Password</label>
+  <input id="password" type="password" placeholder="Enter password" required>
 
-<!-- MAIN -->
-<div class="main" id="backend-v2"></div>
+  <button id="login-btn" type="submit">Sign In</button>
+</form>
 
 <!-- SUPABASE -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-(function () {
+const supabaseUrl = "https://bcluaogmfvweeggfctio.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjbHVhb2dtZnZ3ZWVnZ2ZjdGlvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NjQxNDksImV4cCI6MjA5MTQ0MDE0OX0.OfYFi5RWWym7b8Puw7x4PpzbQvK8BahINKH6Uu_CQxc";
 
-    const supabaseUrl = "https://bcluaogmfvweeggfctio.supabase.co";
-    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjbHVhb2dtZnZ3ZWVnZ2ZjdGlvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NjQxNDksImV4cCI6MjA5MTQ0MDE0OX0.OfYFi5RWWym7b8Puw7x4PpzbQvK8BahINKH6Uu_CQxc";
+const client = supabase.createClient(supabaseUrl, supabaseKey);
 
-    const client = supabase.createClient(supabaseUrl, supabaseKey);
+const form = document.getElementById("login-form");
+const btn = document.getElementById("login-btn");
 
-    const container = document.getElementById("backend-v2");
-    const sidebar = document.getElementById("sidebar");
-    const overlay = document.getElementById("overlay");
-    const sidebarUser = document.getElementById("sidebarUser");
-    const devTab = document.getElementById("devTab");
+const sidebar = document.getElementById("sidebar");
+const overlay = document.getElementById("overlay");
 
-    // ================= USER ROLE MAP =================
-    const roles = {
-        "chad@tlc.inc": "admin",
-        "terri@tlc.inc": "admin",
-        "dvr@tlc.inc": "dev"
-    };
+function openSidebar() {
+  sidebar.classList.add("open");
+  overlay.classList.add("show");
+}
 
-    const names = {
-        "chad@tlc.inc": "Chad",
-        "terri@tlc.inc": "Terri",
-        "dvr@tlc.inc": "Developer"
-    };
+function closeSidebar() {
+  sidebar.classList.remove("open");
+  overlay.classList.remove("show");
+}
 
-    const imgs = {
-        "chad@tlc.inc": "https://i.pravatar.cc/100?img=32",
-        "terri@tlc.inc": "https://i.pravatar.cc/100?img=47",
-        "dvr@tlc.inc": "https://i.pravatar.cc/100?img=12"
-    };
+function logout() {
+  window.location.href = "../index.html";
+}
 
-    let userEmail = null;
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-    // ================= AUTH CHECK =================
-    async function init() {
+  const username = document.getElementById("username").value.trim();
+  const password = document.getElementById("password").value;
 
-        const { data } = await client.auth.getUser();
+  // 🔥 convert username → email
+  const email = username.toLowerCase() + "@tlc.inc";
 
-        if (!data.user) {
-            window.location.href = "../index.html";
-            return;
-        }
+  btn.disabled = true;
+  btn.textContent = "Logging in...";
 
-        userEmail = data.user.email;
+  try {
+    const { data, error } = await client.auth.signInWithPassword({
+      email,
+      password
+    });
 
-        renderSidebar();
-        router();
+    if (error) {
+      alert("Login failed: " + error.message);
+      btn.disabled = false;
+      btn.textContent = "Sign In";
+      return;
     }
 
-    // ================= SIDEBAR =================
-    function renderSidebar() {
+    // success → go to dashboard
+    window.location.href = "./Admin/index.html";
 
-        sidebarUser.innerHTML = `
-            <img src="${imgs[userEmail] || 'https://i.pravatar.cc/100'}">
-            <h3>${names[userEmail] || userEmail.split("@")[0]}</h3>
-        `;
-
-        if (roles[userEmail] === "dev") {
-            devTab.style.display = "block";
-        }
-    }
-
-    // ================= SIDEBAR CONTROLS =================
-    window.openSidebar = () => {
-        sidebar.classList.add("open");
-        overlay.style.display = "block";
-    };
-
-    window.closeSidebar = () => {
-        sidebar.classList.remove("open");
-        overlay.style.display = "none";
-    };
-
-    // ================= LOGOUT =================
-    window.logout = async () => {
-        await client.auth.signOut();
-        window.location.href = "../index.html";
-    };
-
-    // ================= ROUTER =================
-    function router() {
-
-        const page = location.hash.replace("#", "") || "dashboard";
-
-        if (page === "legal") renderLegal();
-        else if (page === "dev") renderDev();
-        else renderDashboard();
-    }
-
-    window.navigate = function (p) {
-        location.hash = p;
-        closeSidebar();
-    };
-
-    // ================= DASHBOARD =================
-    function renderDashboard() {
-
-        container.innerHTML = `
-            <div class="column">
-                <h2>Dashboard</h2>
-                <p>Welcome ${names[userEmail] || "User"}</p>
-                <button class="logout-btn" onclick="logout()">Logout</button>
-                <button class="logout-btn" onclick="openSidebar()">Menu</button>
-            </div>
-
-            <div class="column">
-                <h3>User Switch (demo)</h3>
-
-                <div class="usr-row">
-                    <div class="usr-btn" onclick="switchUser('chad@tlc.inc')">Chad</div>
-                    <div class="usr-btn" onclick="switchUser('terri@tlc.inc')">Terri</div>
-                    <div class="usr-btn" onclick="switchUser('dvr@tlc.inc')">Dev</div>
-                </div>
-
-                <p style="font-size:12px;">(Only works if those accounts exist in Supabase)</p>
-            </div>
-        `;
-    }
-
-    // ================= LEGAL =================
-    function renderLegal() {
-
-        container.innerHTML = `
-            <div class="column">
-                <h2>Legal</h2>
-                <div id="tos">Loading...</div>
-                <button class="logout-btn" onclick="logout()">Logout</button>
-                <button class="logout-btn" onclick="openSidebar()">Menu</button>
-            </div>
-        `;
-
-        fetch("https://dvr-properties-ghe.github.io/TLC-AAB-NewSite/tos.txt")
-            .then(r => r.text())
-            .then(t => document.getElementById("tos").textContent = t);
-    }
-
-    // ================= DEV =================
-    function renderDev() {
-
-        if (roles[userEmail] !== "dev") return;
-
-        container.innerHTML = `
-            <div class="column">
-                <h2>Developer Panel</h2>
-                <p>System Online</p>
-                <button class="logout-btn" onclick="logout()">Logout</button>
-                <button class="logout-btn" onclick="openSidebar()">Menu</button>
-            </div>
-        `;
-    }
-
-    // ================= SWITCH USER (OPTIONAL DEMO) =================
-    window.switchUser = async function (email) {
-        alert("Switching users requires real login. Please log out and log back in.");
-    };
-
-    // ================= INIT =================
-    window.addEventListener("hashchange", router);
-
-    init();
-
-})();
+  } catch (err) {
+    alert("Unexpected error");
+    btn.disabled = false;
+    btn.textContent = "Sign In";
+  }
+});
 </script>
 
 </body>
