@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>TLC SPA System</title>
+<title>TLC Role SPA System</title>
 
 <style>
 body {
@@ -19,16 +19,36 @@ body {
     left: 0;
     top: 0;
     height: 100%;
-    width: 200px;
+    width: 220px;
     background: darkslategray;
-    padding-top: 20px;
     display: flex;
     flex-direction: column;
+    color: white;
 }
 
+/* USER HEADER */
+.sidebar-user {
+    padding: 15px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+}
+
+.sidebar-user img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid white;
+}
+
+.sidebar-user h3 {
+    margin: 5px 0 0 0;
+}
+
+/* NAV */
 .sidebar a {
     color: white;
-    padding: 15px;
+    padding: 14px;
     text-decoration: none;
     cursor: pointer;
 }
@@ -37,9 +57,9 @@ body {
     background: rgba(255,255,255,0.1);
 }
 
-/* MAIN CONTENT */
+/* MAIN */
 .main {
-    margin-left: 200px;
+    margin-left: 220px;
     padding: 20px;
 }
 
@@ -54,17 +74,25 @@ body {
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
-/* USER ICON */
-.V2_Img {
+/* USER BUTTONS */
+.usr-row {
+    display: flex;
+    gap: 10px;
+}
+
+.usr-btn {
     width: 50px;
     height: 50px;
     border-radius: 50%;
-    background: darkslategray;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
+    overflow: hidden;
+    border: 2px solid darkslategray;
+    cursor: pointer;
+}
+
+.usr-btn img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 /* BUTTON */
@@ -78,74 +106,47 @@ body {
     cursor: pointer;
 }
 
-/* USER SWITCH */
-.usr-row {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-.usr-btn {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: white;
-    border: 2px solid darkslategray;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-}
-
-/* BLOCK SCREEN */
+/* BLOCK */
 .blocked {
     text-align: center;
     padding: 80px;
-}
-
-/* MOBILE */
-@media (max-width: 700px) {
-    .sidebar {
-        width: 100px;
-    }
-
-    .main {
-        margin-left: 100px;
-    }
-
-    .sidebar a {
-        font-size: 12px;
-        padding: 10px;
-    }
 }
 </style>
 </head>
 
 <body>
 
-<!-- SIDEBAR -->
 <div class="sidebar">
+
+    <div class="sidebar-user" id="sidebarUser"></div>
+
     <a onclick="navigate('dashboard')">Dashboard</a>
     <a onclick="navigate('legal')">Legal</a>
+
+    <!-- DEV ONLY TAB -->
+    <a onclick="navigate('dev')" id="devTab">Developer Info</a>
+
     <a onclick="logout()">Logout</a>
 </div>
 
-<!-- MAIN APP -->
 <div class="main" id="app"></div>
 
 <script>
 (function () {
 
     const app = document.getElementById("app");
+    const sidebarUser = document.getElementById("sidebarUser");
+    const devTab = document.getElementById("devTab");
 
-    const usernameMap = {
-        DVR: "Dev",
-        "TLC-Chad": "Chad",
-        "TLC-Terri": "Terri",
-        NewUser: "NewUser"
+    // ===== USERS =====
+    const users = {
+        DVR: { name: "Developer", role: "dev", img: "https://i.pravatar.cc/100?img=12" },
+        "TLC-Chad": { name: "Chad", role: "admin", img: "https://i.pravatar.cc/100?img=32" },
+        "TLC-Terri": { name: "Terri", role: "admin", img: "https://i.pravatar.cc/100?img=47" },
+        NewUser: { name: "New", role: "blocked", img: "https://i.pravatar.cc/100?img=5" }
     };
 
-    // ========= SESSION =========
+    // ===== SESSION =====
     function getSession() {
         const raw = document.cookie.split("; ")
             .find(r => r.startsWith("session="))
@@ -168,7 +169,7 @@ body {
             "; path=/";
     }
 
-    function deleteSession() {
+    function logout() {
         document.cookie = "session=; path=/; max-age=0";
         location.reload();
     }
@@ -177,69 +178,60 @@ body {
         return getSession();
     }
 
-    // ========= BLOCK SCREEN =========
-    function blockedScreen() {
+    // ===== SIDEBAR =====
+    function renderSidebar(user) {
+        const u = users[user];
+
+        sidebarUser.innerHTML = `
+            <img src="${u.img}">
+            <h3>${u.name}</h3>
+        `;
+
+        // DEV TAB ONLY FOR DEV
+        devTab.style.display = (u.role === "dev") ? "block" : "none";
+    }
+
+    // ===== BLOCK =====
+    function blocked() {
         app.innerHTML = `
             <div class="blocked">
                 <h2>Access Denied</h2>
-                <p>This account is restricted.</p>
+                <p>This account cannot access this system.</p>
                 <button class="logout-btn" onclick="logout()">Logout</button>
             </div>
         `;
     }
 
-    // ========= PAGES =========
-    function dashboard() {
-
-        const user = getUser();
-        const name = usernameMap[user] || user;
+    // ===== PAGES =====
+    function dashboard(user) {
+        const u = users[user];
 
         app.innerHTML = `
-
             <div class="column">
-                <div style="display:flex; gap:15px; align-items:center;">
-                    <div class="V2_Img">${name}</div>
-                    <div>
-                        <h3 style="margin:0;">${name}</h3>
-                        <p style="margin:0;">Dashboard</p>
-                    </div>
-                </div>
-
+                <h2>Dashboard</h2>
+                <p>Welcome ${u.name}</p>
                 <button class="logout-btn" onclick="logout()">Logout</button>
             </div>
 
             <div class="column">
                 <h3>User Switch</h3>
                 <div class="usr-row">
-                    <div class="usr-btn" onclick="switchUser('DVR')">D</div>
-                    <div class="usr-btn" onclick="switchUser('TLC-Chad')">C</div>
-                    <div class="usr-btn" onclick="switchUser('TLC-Terri')">T</div>
-                    <div class="usr-btn" onclick="switchUser('NewUser')">N</div>
+                    <div class="usr-btn" onclick="switchUser('DVR')"><img src="${users.DVR.img}"></div>
+                    <div class="usr-btn" onclick="switchUser('TLC-Chad')"><img src="${users["TLC-Chad"].img}"></div>
+                    <div class="usr-btn" onclick="switchUser('TLC-Terri')"><img src="${users["TLC-Terri"].img}"></div>
+                    <div class="usr-btn" onclick="switchUser('NewUser')"><img src="${users.NewUser.img}"></div>
                 </div>
-            </div>
-
-            <div class="column">
-                Welcome to the dashboard.
             </div>
         `;
     }
 
-    function legal() {
-
-        const user = getUser();
-        const name = usernameMap[user] || user;
+    function legal(user) {
+        const u = users[user];
 
         app.innerHTML = `
-
             <div class="column">
-                <div style="display:flex; gap:15px; align-items:center;">
-                    <div class="V2_Img">${name}</div>
-                    <div>
-                        <h3 style="margin:0;">${name}</h3>
-                        <p style="margin:0;">Legal</p>
-                    </div>
-                </div>
-
+                <h2>Legal</h2>
+                <p>${u.name}</p>
                 <button class="logout-btn" onclick="logout()">Logout</button>
             </div>
 
@@ -251,55 +243,69 @@ body {
 
         fetch("https://dvr-properties-ghe.github.io/TLC-AAB-NewSite/tos.txt")
             .then(r => r.text())
-            .then(t => {
-                document.getElementById("tos").textContent = t;
-            });
+            .then(t => document.getElementById("tos").textContent = t);
     }
 
-    // ========= ROUTER =========
+    function dev(user) {
+        const u = users[user];
+
+        if (u.role !== "dev") {
+            app.innerHTML = `
+                <div class="blocked">
+                    <h2>Developer Access Only</h2>
+                    <button class="logout-btn" onclick="logout()">Logout</button>
+                </div>
+            `;
+            return;
+        }
+
+        app.innerHTML = `
+            <div class="column">
+                <h2>Developer Info</h2>
+                <p>System Version: 1.0 SPA</p>
+                <p>User: ${u.name}</p>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        `;
+    }
+
+    // ===== ROUTER =====
     function navigate(page) {
         location.hash = page;
     }
 
     function router() {
 
-        const user = getSession();
+        const user = getUser();
 
-        // 🚨 BLOCK NEWUSER COMPLETELY
-        if (user === "NewUser") {
-            blockedScreen();
+        if (!user) return logout();
+
+        const u = users[user];
+
+        if (u.role === "blocked") {
+            blocked();
             return;
         }
+
+        renderSidebar(user);
 
         const page = location.hash.replace("#", "") || "dashboard";
 
-        if (page === "legal") legal();
-        else dashboard();
+        if (page === "legal") legal(user);
+        else if (page === "dev") dev(user);
+        else dashboard(user);
     }
 
-    // ========= GLOBALS =========
+    // ===== GLOBALS =====
     window.switchUser = function (u) {
-
-        if (u === "NewUser") {
-            setSession("NewUser");
-            router();
-            return;
-        }
-
         setSession(u);
         router();
     };
 
-    window.logout = function () {
-        deleteSession();
-    };
-
+    window.logout = logout;
     window.navigate = navigate;
 
-    // ========= INIT =========
-    if (!getSession()) {
-        setSession("DVR");
-    }
+    if (!getSession()) setSession("DVR");
 
     window.addEventListener("hashchange", router);
     router();
