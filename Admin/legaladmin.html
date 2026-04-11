@@ -1,0 +1,37 @@
+<!DOCTYPE html><html><head><title>Legal - TLC Anchor And Barrier</title><link rel="icon" type="image/png" href="https://cdn0.iconfinder.com/data/icons/social-glyph/30/tumblr-60.png"><link rel="stylesheet" href="Style-Index.css">
+    <style>
+        p {
+  overflow-wrap: break-word; /* Modern and preferred */
+  word-wrap: break-word;   /* Older alias for broader compatibility */
+}
+
+    </style>
+</head>
+    <body>
+        <div class="topnav">
+            <a href="index.html" class="link-topnav">Home</a>
+            <a href="" class="link-topnav">Contact Us</a>
+            <a class="link-topnav" id="logout-btn">Logout</a>
+        </div>
+        <br>
+        <br>
+
+    <p id="output"></p>
+
+<script>
+fetch("https://dvr-properties-ghe.github.io/TLC-AAB-NewSite/tos.txt")
+  .then(response => response.text())
+  .then(text => {
+    document.getElementById("output").textContent = text;
+  })
+  .catch(err => {
+    document.getElementById("output").textContent = "Error loading file: " + err;
+  });
+</script>
+<script src="dashboard.js"></script>
+
+
+</body></html>
+
+
+
