@@ -74,10 +74,10 @@
             </div>
             <div class="column postCol">
                 <div class="post roundcorner">
-                    <iframe class="fb-frame" src="https://www.facebook.com/plugins/post.php?href=https%3A%2F%2Fwww.facebook.com%2FFacebookDevelopers%2Fposts%2F10151471074398553&width=500" scrolling="no"></iframe>
+                    <iframe class="fb-frame" src="https://www.facebook.com/plugins/post.php?href=https%3A%2F%2Fwww.facebook.com%2Fpermalink.php%3Fstory_fbid%3Dpfbid0t7AXhnEKHcpn5g1bPytMNJn8J9EzBuuE9ox2nUCaXbYyQJchYvBq9bjEsrbiQ4nbl%26id%3D100057787024350&show_text=true&width=500" width="500" height="250" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
                 </div>
                 <div class="post roundcorner">
-                    <iframe class="fb-frame" src="https://www.facebook.com/plugins/post.php?href=https%3A%2F%2Fwww.facebook.com%2FFacebookDevelopers%2Fposts%2F10151471074398553&width=500" scrolling="no"></iframe>
+                    <iframe class="fb-frame" src="https://www.facebook.com/plugins/post.php?href=https%3A%2F%2Fwww.facebook.com%2Fpermalink.php%3Fstory_fbid%3Dpfbid0r99ccxeWEDMgmqWexVghnUiYC587W5qMMHpWWKNewKBqtmWt1km1dTRkJtm2MWK8l%26id%3D100057787024350&show_text=true&width=500" width="500" height="716" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
                 </div>
             </div>
         `;
