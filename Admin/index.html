@@ -13,7 +13,6 @@ body {
     overflow-x: hidden;
 }
 
-/* TOPBAR */
 .topnav {
     background: darkslategray;
     color: white;
@@ -22,11 +21,8 @@ body {
     justify-content: space-between;
 }
 
-.menu-btn {
-    cursor: pointer;
-}
+.menu-btn { cursor: pointer; }
 
-/* OVERLAY */
 #overlay {
     position: fixed;
     inset: 0;
@@ -35,7 +31,6 @@ body {
     z-index: 9;
 }
 
-/* SIDEBAR */
 #sidebar {
     position: fixed;
     top: 0;
@@ -50,9 +45,7 @@ body {
     transition: transform 0.3s ease;
 }
 
-#sidebar.open {
-    transform: translateX(0);
-}
+#sidebar.open { transform: translateX(0); }
 
 #sidebarUser {
     text-align: center;
@@ -78,10 +71,7 @@ body {
     background: rgba(255,255,255,0.1);
 }
 
-/* MAIN */
-.main {
-    padding: 20px;
-}
+.main { padding: 20px; }
 
 .column {
     max-width: 900px;
@@ -116,6 +106,7 @@ body {
 <div id="sidebar">
     <div id="sidebarUser"></div>
     <a onclick="navigate('dashboard')">Dashboard</a>
+    <a id="allLogsTab" onclick="navigate('logs')" style="display:none;">All Logins</a>
     <a onclick="navigate('legal')">Legal</a>
     <a id="devTab" onclick="navigate('dev')" style="display:none;">Developer</a>
     <a onclick="logout()">Logout</a>
@@ -137,6 +128,7 @@ body {
     const overlay = document.getElementById("overlay");
     const sidebarUser = document.getElementById("sidebarUser");
     const devTab = document.getElementById("devTab");
+    const allLogsTab = document.getElementById("allLogsTab");
 
     const roles = {
         "chad@tlc.inc": "admin",
@@ -159,7 +151,6 @@ body {
     let userEmail = null;
 
     async function init() {
-
         const { data } = await client.auth.getUser();
 
         if (!data.user) {
@@ -169,55 +160,50 @@ body {
 
         userEmail = data.user.email;
 
-        // 🔥 LOG LOGIN
-        await client.from("login_history").insert([
-            { email: userEmail }
-        ]);
+        // log login
+        await client.from("login_history").insert([{ email: userEmail }]);
 
         sidebarUser.innerHTML = `
             <img src="${imgs[userEmail] || 'https://i.pravatar.cc/100'}">
             <h3>${names[userEmail] || userEmail.split("@")[0]}</h3>
         `;
 
-        if (roles[userEmail] === "dev") {
-            devTab.style.display = "block";
-        }
+        if (roles[userEmail] === "dev") devTab.style.display = "block";
+        if (roles[userEmail] === "admin") allLogsTab.style.display = "block";
 
         router();
     }
 
-    // SIDEBAR
-    window.openSidebar = function () {
+    window.openSidebar = () => {
         sidebar.classList.add("open");
         overlay.style.display = "block";
     };
 
-    window.closeSidebar = function () {
+    window.closeSidebar = () => {
         sidebar.classList.remove("open");
         overlay.style.display = "none";
     };
 
-    // LOGOUT
-    window.logout = async function () {
+    window.logout = async () => {
         await client.auth.signOut();
         window.location.href = "../index.html";
     };
 
-    // ROUTER
     function router() {
         const page = location.hash.replace("#", "") || "dashboard";
 
-        if (page === "legal") renderLegal();
+        if (page === "logs") renderAllLogs();
+        else if (page === "legal") renderLegal();
         else if (page === "dev") renderDev();
         else renderDashboard();
     }
 
-    window.navigate = function (p) {
+    window.navigate = (p) => {
         location.hash = p;
         closeSidebar();
     };
 
-    // DASHBOARD
+    // DASHBOARD (LAST 3 LOGINS)
     async function renderDashboard() {
 
         container.innerHTML = `
@@ -226,80 +212,72 @@ body {
                 <p>Welcome ${names[userEmail] || "User"}</p>
 
                 ${roles[userEmail] === "admin" ? `
-                    <h3>Login History</h3>
-                    <div id="loginHistory">Loading...</div>
+                    <h3>Recent Logins</h3>
+                    <div id="recentLogs">Loading...</div>
                 ` : ""}
 
                 <button class="logout-btn" onclick="logout()">Logout</button>
-                <button class="logout-btn" onclick="openSidebar()">Menu</button>
             </div>
         `;
 
         if (roles[userEmail] === "admin") {
+            const box = document.getElementById("recentLogs");
 
-            const historyBox = document.getElementById("loginHistory");
-
-            const { data, error } = await client
+            const { data } = await client
                 .from("login_history")
                 .select("email, login_time")
                 .order("login_time", { ascending: false })
-                .limit(25);
+                .limit(3);
 
-            if (error) {
-                historyBox.innerHTML = "Error loading history";
-                return;
-            }
-
-            if (!data.length) {
-                historyBox.innerHTML = "No login history found";
-                return;
-            }
-
-            historyBox.innerHTML = `
-                <table style="width:100%; border-collapse: collapse;">
-                    <tr>
-                        <th style="padding:8px;">Email</th>
-                        <th style="padding:8px;">Time</th>
-                    </tr>
-                    ${data.map(row => `
-                        <tr>
-                            <td style="padding:8px;">${row.email}</td>
-                            <td style="padding:8px;">
-                                ${new Date(row.login_time).toLocaleString()}
-                            </td>
-                        </tr>
-                    `).join("")}
-                </table>
-            `;
+            box.innerHTML = data.map(row => `
+                <p>${row.email} — ${new Date(row.login_time).toLocaleString()}</p>
+            `).join("");
         }
     }
 
-    // LEGAL
-    function renderLegal() {
+    // ALL LOGS PAGE
+    async function renderAllLogs() {
+
+        if (roles[userEmail] !== "admin") return;
+
         container.innerHTML = `
             <div class="column">
-                <h2>Legal</h2>
-                <div id="tos">Loading...</div>
+                <h2>All Login History</h2>
+                <div id="allLogs">Loading...</div>
                 <button class="logout-btn" onclick="logout()">Logout</button>
             </div>
         `;
 
-        fetch("https://dvr-properties-ghe.github.io/TLC-AAB-NewSite/tos.txt")
-            .then(r => r.text())
-            .then(t => document.getElementById("tos").textContent = t);
+        const box = document.getElementById("allLogs");
+
+        const { data } = await client
+            .from("login_history")
+            .select("email, login_time")
+            .order("login_time", { ascending: false });
+
+        box.innerHTML = `
+            <table style="width:100%;">
+                <tr>
+                    <th>Email</th>
+                    <th>Time</th>
+                </tr>
+                ${data.map(row => `
+                    <tr>
+                        <td>${row.email}</td>
+                        <td>${new Date(row.login_time).toLocaleString()}</td>
+                    </tr>
+                `).join("")}
+            </table>
+        `;
     }
 
-    // DEV
+    function renderLegal() {
+        container.innerHTML = `<div class="column"><h2>Legal</h2></div>`;
+    }
+
     function renderDev() {
         if (roles[userEmail] !== "dev") return;
-
-        container.innerHTML = `
-            <div class="column">
-                <h2>Developer Panel</h2>
-                <p>System Online</p>
-                <button class="logout-btn" onclick="logout()">Logout</button>
-            </div>
-        `;
+        container.innerHTML = `<div class="column"><h2>Developer Panel</h2></div>`;
     }
 
     window.addEventListener("hashchange", router);
