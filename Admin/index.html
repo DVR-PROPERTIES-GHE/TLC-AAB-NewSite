@@ -10,24 +10,23 @@ body {
     margin: 0;
     font-family: Arial, sans-serif;
     background: #f5f5f5;
-    overflow-x: hidden; /* 🔥 prevents any sidebar peeking */
+    overflow-x: hidden;
 }
 
-/* ================= TOPBAR ================= */
+/* TOPBAR */
 .topnav {
     background: darkslategray;
     color: white;
     padding: 10px;
     display: flex;
     justify-content: space-between;
-    align-items: center;
 }
 
 .menu-btn {
     cursor: pointer;
 }
 
-/* ================= OVERLAY ================= */
+/* OVERLAY */
 #overlay {
     position: fixed;
     inset: 0;
@@ -36,7 +35,7 @@ body {
     z-index: 9;
 }
 
-/* ================= SIDEBAR (FIXED PROPERLY) ================= */
+/* SIDEBAR */
 #sidebar {
     position: fixed;
     top: 0;
@@ -47,9 +46,6 @@ body {
     color: white;
     z-index: 10;
     padding: 15px;
-    box-sizing: border-box;
-
-    /* 🔥 KEY FIX */
     transform: translateX(-100%);
     transition: transform 0.3s ease;
 }
@@ -58,7 +54,6 @@ body {
     transform: translateX(0);
 }
 
-/* SIDEBAR USER */
 #sidebarUser {
     text-align: center;
     padding: 10px;
@@ -71,7 +66,6 @@ body {
     border-radius: 50%;
 }
 
-/* SIDEBAR LINKS */
 #sidebar a {
     display: block;
     padding: 12px;
@@ -84,14 +78,13 @@ body {
     background: rgba(255,255,255,0.1);
 }
 
-/* ================= MAIN ================= */
+/* MAIN */
 .main {
     padding: 20px;
 }
 
-/* CARD */
 .column {
-    max-width: 800px;
+    max-width: 900px;
     margin: 15px auto;
     background: white;
     padding: 20px;
@@ -99,22 +92,6 @@ body {
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
-/* USER SWITCH */
-.usr-row {
-    display: flex;
-    gap: 10px;
-}
-
-.usr-btn {
-    padding: 10px;
-    background: darkslategray;
-    color: white;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 12px;
-}
-
-/* BUTTON */
 .logout-btn {
     padding: 8px 15px;
     border: none;
@@ -129,29 +106,23 @@ body {
 
 <body>
 
-<!-- TOP BAR -->
 <div class="topnav">
     <span class="menu-btn" onclick="openSidebar()">☰ Menu</span>
     <span>TLC Dashboard</span>
 </div>
 
-<!-- OVERLAY -->
 <div id="overlay" onclick="closeSidebar()"></div>
 
-<!-- SIDEBAR -->
 <div id="sidebar">
     <div id="sidebarUser"></div>
-
     <a onclick="navigate('dashboard')">Dashboard</a>
     <a onclick="navigate('legal')">Legal</a>
     <a id="devTab" onclick="navigate('dev')" style="display:none;">Developer</a>
     <a onclick="logout()">Logout</a>
 </div>
 
-<!-- MAIN -->
 <div class="main" id="backend-v2"></div>
 
-<!-- SUPABASE -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
@@ -159,7 +130,6 @@ body {
 
     const supabaseUrl = "https://bcluaogmfvweeggfctio.supabase.co";
     const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjbHVhb2dtZnZ3ZWVnZ2ZjdGlvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NjQxNDksImV4cCI6MjA5MTQ0MDE0OX0.OfYFi5RWWym7b8Puw7x4PpzbQvK8BahINKH6Uu_CQxc";
-
     const client = supabase.createClient(supabaseUrl, supabaseKey);
 
     const container = document.getElementById("backend-v2");
@@ -168,7 +138,6 @@ body {
     const sidebarUser = document.getElementById("sidebarUser");
     const devTab = document.getElementById("devTab");
 
-    // ================= USERS =================
     const roles = {
         "chad@tlc.inc": "admin",
         "terri@tlc.inc": "admin",
@@ -189,7 +158,6 @@ body {
 
     let userEmail = null;
 
-    // ================= AUTH =================
     async function init() {
 
         const { data } = await client.auth.getUser();
@@ -200,6 +168,11 @@ body {
         }
 
         userEmail = data.user.email;
+
+        // 🔥 LOG LOGIN
+        await client.from("login_history").insert([
+            { email: userEmail }
+        ]);
 
         sidebarUser.innerHTML = `
             <img src="${imgs[userEmail] || 'https://i.pravatar.cc/100'}">
@@ -213,7 +186,7 @@ body {
         router();
     }
 
-    // ================= SIDEBAR =================
+    // SIDEBAR
     window.openSidebar = function () {
         sidebar.classList.add("open");
         overlay.style.display = "block";
@@ -224,15 +197,14 @@ body {
         overlay.style.display = "none";
     };
 
-    // ================= LOGOUT =================
+    // LOGOUT
     window.logout = async function () {
         await client.auth.signOut();
         window.location.href = "../index.html";
     };
 
-    // ================= ROUTER =================
+    // ROUTER
     function router() {
-
         const page = location.hash.replace("#", "") || "dashboard";
 
         if (page === "legal") renderLegal();
@@ -245,30 +217,70 @@ body {
         closeSidebar();
     };
 
-    // ================= DASHBOARD =================
-    function renderDashboard() {
+    // DASHBOARD
+    async function renderDashboard() {
 
         container.innerHTML = `
             <div class="column">
                 <h2>Dashboard</h2>
                 <p>Welcome ${names[userEmail] || "User"}</p>
 
+                ${roles[userEmail] === "admin" ? `
+                    <h3>Login History</h3>
+                    <div id="loginHistory">Loading...</div>
+                ` : ""}
+
                 <button class="logout-btn" onclick="logout()">Logout</button>
                 <button class="logout-btn" onclick="openSidebar()">Menu</button>
             </div>
         `;
+
+        if (roles[userEmail] === "admin") {
+
+            const historyBox = document.getElementById("loginHistory");
+
+            const { data, error } = await client
+                .from("login_history")
+                .select("email, login_time")
+                .order("login_time", { ascending: false })
+                .limit(25);
+
+            if (error) {
+                historyBox.innerHTML = "Error loading history";
+                return;
+            }
+
+            if (!data.length) {
+                historyBox.innerHTML = "No login history found";
+                return;
+            }
+
+            historyBox.innerHTML = `
+                <table style="width:100%; border-collapse: collapse;">
+                    <tr>
+                        <th style="padding:8px;">Email</th>
+                        <th style="padding:8px;">Time</th>
+                    </tr>
+                    ${data.map(row => `
+                        <tr>
+                            <td style="padding:8px;">${row.email}</td>
+                            <td style="padding:8px;">
+                                ${new Date(row.login_time).toLocaleString()}
+                            </td>
+                        </tr>
+                    `).join("")}
+                </table>
+            `;
+        }
     }
 
-    // ================= LEGAL =================
+    // LEGAL
     function renderLegal() {
-
         container.innerHTML = `
             <div class="column">
                 <h2>Legal</h2>
                 <div id="tos">Loading...</div>
-
                 <button class="logout-btn" onclick="logout()">Logout</button>
-                <button class="logout-btn" onclick="openSidebar()">Menu</button>
             </div>
         `;
 
@@ -277,23 +289,19 @@ body {
             .then(t => document.getElementById("tos").textContent = t);
     }
 
-    // ================= DEV =================
+    // DEV
     function renderDev() {
-
         if (roles[userEmail] !== "dev") return;
 
         container.innerHTML = `
             <div class="column">
                 <h2>Developer Panel</h2>
                 <p>System Online</p>
-
                 <button class="logout-btn" onclick="logout()">Logout</button>
-                <button class="logout-btn" onclick="openSidebar()">Menu</button>
             </div>
         `;
     }
 
-    // ================= INIT =================
     window.addEventListener("hashchange", router);
     init();
 
